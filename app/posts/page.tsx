@@ -1,21 +1,25 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../../component/ui/card"
-import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import Link from "next/link";
 
 type Post = {
-  id: number
-  title: string
-  body: string
-}
+  id: number;
+  title: string;
+  body: string;
+};
+
+export const metadata = {
+  title: "Gönderiler",
+};
 
 async function getPosts(): Promise<Post[]> {
   const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
     cache: "no-store",
-  })
-  return res.json()
+  });
+  return res.json();
 }
 
 export default async function PostsPage() {
-  const posts = await getPosts()
+  const posts = await getPosts();
 
   return (
     <div className="p-10 space-y-4">
@@ -39,5 +43,5 @@ export default async function PostsPage() {
         </Card>
       ))}
     </div>
-  )
+  );
 }

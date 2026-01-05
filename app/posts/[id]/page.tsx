@@ -1,9 +1,10 @@
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "../../../component/ui/card"
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import type { Metadata } from "next";
   
   type Post = {
     id: number
@@ -32,6 +33,19 @@ import {
       { cache: "no-store" }
     )
     return res.json()
+  }
+
+  export async function generateMetadata({
+    params,
+  }: {
+    params: { id: string }
+  }): Promise<Metadata> {
+    try {
+      const post = await getPost(params.id)
+      return { title: post?.title ?? "Gönderi" }
+    } catch {
+      return { title: "Gönderi" }
+    }
   }
   
   export default async function PostDetailPage({

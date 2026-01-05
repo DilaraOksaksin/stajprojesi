@@ -1,23 +1,136 @@
-import FollowButton from "./follow-button";
-import { User } from "../../../types/user";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import type { User } from "@/types/user";
 
-type PageProps = {
-  params: { id: string };
+type Post = {
+  id: number;
+  title: string;
+  body: string;
 };
 
-export default async function UserDetailPage({ params }: PageProps) {
-  const res = await fetch(
-    `https://jsonplaceholder.typicode.com/users/${params.id}`,
-    { cache: "no-store" }
-  );
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
-  const user: User = await res.json();
+async function getUser(id: string): Promise<User | null> {
+  const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function getPosts(id: string): Promise<Post[]> {
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const user = await getUser(params.id);
+  if (!user) {
+    return { title: "Kullanıcı" };
+  }
+  return { title: user.name };
+}
+
+export default async function UserDetailPage({ params }: { params: { id: string } }) {
+  const user = await getUser(params.id);
+  if (!user) {
+    notFound();
+  }
+
+  const posts = await getPosts(params.id);
+  const role = user.id % 2 === 0 ? "Admin" : "User";
+  const historyItems = posts
+    .slice(0, 3)
+    .map((post) => `Gönderi #${post.id} görüntülendi`);
 
   return (
-    <div className="p-10 space-y-4">
-      <h1 className="text-3xl font-semibold">{user.name}</h1>
-      <p>Email: {user.email}</p>
-      <FollowButton />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-11 w-11">
+              <AvatarFallback className="text-sm font-semibold">
+                {getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle className="text-xl">{user.name}</CardTitle>
+              <p className="text-sm text-muted-foreground">@{user.username}</p>
+            </div>
+          </div>
+          <Badge variant={role === "Admin" ? "success" : "secondary"}>{role}</Badge>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <div>
+            <p className="text-xs text-muted-foreground">Email</p>
+            <p className="text-sm font-medium">{user.email}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Telefon</p>
+            <p className="text-sm font-medium">{user.phone}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Web</p>
+            <p className="text-sm font-medium">{user.website}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Gecmis Hareketleri</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {historyItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Kayıt bulunamadı.</p>
+          ) : (
+            <ul className="space-y-2 text-sm text-foreground">
+              {historyItems.map((item, index) => (
+                <li key={`${item}-${index}`} className="rounded-md border border-border px-3 py-2">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Gönderiler ({posts.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {posts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Gönderi bulunamadı.</p>
+          ) : (
+            posts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/posts/${post.id}`}
+                className="block rounded-md border border-border px-3 py-2 text-sm transition hover:bg-muted"
+              >
+                {post.title}
+              </Link>
+            ))
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

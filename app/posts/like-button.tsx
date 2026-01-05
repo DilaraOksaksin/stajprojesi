@@ -1,19 +1,18 @@
 "use client"
 
-import { Heart } from "lucide-react"
-import { Button } from "../../component/ui/button"
-import useLocalStorage from "../lib/useLocalStorage"
-
+import { Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useLocalStorage } from "../lib/useLocalStorage";
 
 type Props = {
-  postId: number
-}
+  postId: number;
+};
 
 export default function LikeButton({ postId }: Props) {
   const [liked, setLiked] = useLocalStorage<boolean>(
     `post-like-${postId}`,
     false
-  )
+  );
 
   return (
     <Button
@@ -29,5 +28,5 @@ export default function LikeButton({ postId }: Props) {
         }`}
       />
     </Button>
-  )
+  );
 }

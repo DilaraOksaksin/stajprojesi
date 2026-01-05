@@ -1,28 +1,17 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 
-import Header from "../component/Header";
-import Sidebar from "../component/Sidebar";
-import Footer from "../component/Footer";
-import { SidebarProvider } from "./providers/sidebar-context";
+import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
+import AppSidebar from "@/app/components/AppSidebar";
+import PageTitle from "@/app/components/PageTitle";
 
-
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-});
-
-export const metadata: Metadata = {
-  title: "Staj Projesi",
-  description: "Frontend Intern Dashboard",
-};
+import {
+  SidebarProvider,
+  SidebarInset,
+} from "@/app/components/ui/sidebar";
 
 export default function RootLayout({
   children,
@@ -30,25 +19,37 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="tr" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="flex flex-col min-h-screen">
+    <html lang="tr" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <SidebarProvider defaultOpen={false}>
+            {/* SIDEBAR + CONTENT */}
+            <div className="flex flex-1 overflow-hidden">
+              <AppSidebar />
 
-        {/* 👇 BURASI KRİTİK */}
-        <SidebarProvider>
-          <Header />
+              <SidebarInset className="flex-1 overflow-y-auto">
+                {/* HEADER */}
+                <Header />
 
-          <div className="flex flex-1">
-            <Sidebar />
+                <main className="p-8">
+                  <PageTitle />
+                  {children}
+                </main>
 
-            <main className="flex-1 p-8">
-              {children}
-            </main>
-          </div>
-
-          <Footer />
-        </SidebarProvider>
-
+                {/* FOOTER */}
+                <Footer />
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Staj Projesi",
+    default: "Staj Projesi",
+  },
+};

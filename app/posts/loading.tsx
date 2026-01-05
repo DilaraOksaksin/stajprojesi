@@ -1,4 +1,4 @@
-import { Card } from "../../component/ui/card";
+import { Card } from "../components/ui/card";
 
 export default function PostsLoading() {
   return (
