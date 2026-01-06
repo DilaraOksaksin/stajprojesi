@@ -5,6 +5,8 @@ import { FileText, Star, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { mapActivityEntry } from "@/app/lib/activity-log";
+import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import { activities } from "@/app/dashboard/activity/activity-data";
 
@@ -47,13 +49,19 @@ async function getPosts(): Promise<Post[]> {
 
 export default function DashboardClient({
   title = "Dashboard",
-  subtitle = "Hoş geldiniz.",
+  subtitle = "HoY geldiniz.",
 }: DashboardClientProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [favoriteUsers] = useLocalStorage<number[]>("favoriteUsers", []);
   const [favoritePosts] = useLocalStorage<number[]>("favorites", []);
+  const { entries: activityEntries } = useActivityLog();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -84,7 +92,13 @@ export default function DashboardClient({
     },
   ];
 
-  const recentActivities = useMemo(() => activities.slice(0, 3), []);
+  const recentActivities = useMemo(() => {
+    if (!isMounted) return activities.slice(0, 3);
+    const source = activityEntries.length
+      ? activityEntries.map(mapActivityEntry)
+      : activities;
+    return source.slice(0, 3);
+  }, [activityEntries, isMounted]);
 
   return (
     <div className="space-y-8">
@@ -125,7 +139,7 @@ export default function DashboardClient({
         <CardContent>
           {recentActivities.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Henüz bir hareket kaydedilmedi.
+              HenÇ¬z bir hareket kaydedilmedi.
             </p>
           ) : (
             <div className="space-y-3 text-sm">

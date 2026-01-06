@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
+import { createActivityEntry } from '@/app/lib/activity-log';
+import { useActivityLog } from '@/app/lib/useActivityLog';
+
 interface FavoriButonuProps {
   id: number;
   className?: string;
@@ -9,6 +12,7 @@ interface FavoriButonuProps {
 
 export default function FavoriButonu({ id, className = "" }: FavoriButonuProps) {
   const [favorimi, setFavorimi] = useState(false);
+  const { addActivity } = useActivityLog();
 
   // Sayfa yüklendiğinde favori durumunu kontrol et
   useEffect(() => {
@@ -37,6 +41,7 @@ export default function FavoriButonu({ id, className = "" }: FavoriButonuProps) 
     e.stopPropagation(); // Kutucuğa tıklama olayının çalışmasını engelle
     
     const favoriler = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const wasFavorite = favoriler.includes(id);
     
     if (favoriler.includes(id)) {
       // Favorilerden çıkar
@@ -49,6 +54,16 @@ export default function FavoriButonu({ id, className = "" }: FavoriButonuProps) 
       localStorage.setItem('favorites', JSON.stringify(favoriler));
       setFavorimi(true);
     }
+
+    addActivity(
+      createActivityEntry({
+        type: 'Favori',
+        tag: `[POST:${id}]`,
+        text: wasFavorite
+          ? 'Gönderi favorilerden çıkarıldı'
+          : 'Gönderi favorilere eklendi',
+      })
+    );
 
     // Custom event dispatch et
     window.dispatchEvent(new CustomEvent('favoritesChanged'));

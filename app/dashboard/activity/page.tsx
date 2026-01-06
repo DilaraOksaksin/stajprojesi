@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
@@ -8,6 +8,8 @@ import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Search } from "lucide-react";
 import { activities, type ActivityItem } from "./activity-data";
+import { mapActivityEntry } from "@/app/lib/activity-log";
+import { useActivityLog } from "@/app/lib/useActivityLog";
 
 const badgeStyles: Record<ActivityItem["type"], string> = {
   Arama: "border-transparent bg-blue-500/15 text-blue-700 hover:bg-blue-500/25 dark:text-blue-200",
@@ -18,14 +20,25 @@ const badgeStyles: Record<ActivityItem["type"], string> = {
 };
 
 export default function ActivityPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const { entries: activityEntries } = useActivityLog();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const sourceActivities = useMemo(() => {
+    if (!isMounted) return activities;
+    return activityEntries.length ? activityEntries.map(mapActivityEntry) : activities;
+  }, [activityEntries, isMounted]);
   const [typeFilter, setTypeFilter] = useState<"Tümü" | ActivityItem["type"]>("Tümü");
   const [dateFilter, setDateFilter] = useState<"Tümü" | ActivityItem["dateGroup"]>("Tümü");
 
   const filteredActivities = useMemo(() => {
     const normalizedQuery = searchTerm.trim().toLocaleLowerCase("tr-TR");
 
-    return activities.filter((activity) => {
+    return sourceActivities.filter((activity) => {
       const matchesType = typeFilter === "Tümü" || activity.type === typeFilter;
       const matchesDate = dateFilter === "Tümü" || activity.dateGroup === dateFilter;
       const matchesText =
@@ -36,7 +49,7 @@ export default function ActivityPage() {
 
       return matchesType && matchesDate && matchesText;
     });
-  }, [searchTerm, typeFilter, dateFilter]);
+  }, [searchTerm, typeFilter, dateFilter, sourceActivities]);
 
   const canClearFilters = searchTerm.length > 0 || typeFilter !== "Tümü" || dateFilter !== "Tümü";
 
@@ -84,7 +97,7 @@ export default function ActivityPage() {
       </div>
       {filteredActivities.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          {activities.length === 0
+          {sourceActivities.length === 0
             ? "Henüz bir hareket kaydedilmedi"
             : "Filtrelere uygun bir hareket bulunamadı"}
         </p>

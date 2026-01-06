@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Heart, MessageSquare, Search } from "lucide-react";
 
+import { createActivityEntry } from "@/app/lib/activity-log";
+import { useActivityLog } from "@/app/lib/useActivityLog";
+import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import {
   Card,
   CardContent,
@@ -56,6 +59,15 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
   const [commentsError, setCommentsError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [favoritePostIds, setFavoritePostIds] = useLocalStorage<number[]>(
+    "favorites",
+    []
+  );
+  const { addActivity } = useActivityLog();
+  const favoriteSet = useMemo(
+    () => new Set(favoritePostIds),
+    [favoritePostIds]
+  );
 
   const filteredPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -132,6 +144,26 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
     }
   };
 
+  const toggleFavorite = (event: React.MouseEvent, postId: number) => {
+    event.stopPropagation();
+    const wasFavorite = favoriteSet.has(postId);
+    setFavoritePostIds((prev) =>
+      prev.includes(postId)
+        ? prev.filter((id) => id !== postId)
+        : [...prev, postId]
+    );
+    addActivity(
+      createActivityEntry({
+        type: "Favori",
+        tag: `[POST:${postId}]`,
+        text: wasFavorite
+          ? "Gönderi favorilerden çıkarıldı"
+          : "Gönderi favorilere eklendi",
+      })
+    );
+    window.dispatchEvent(new CustomEvent("favoritesChanged"));
+  };
+
   return (
     <>
       <div className="space-y-6">
@@ -197,10 +229,28 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
                   {post.body}
                 </CardContent>
                 <CardFooter className="justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Heart className="size-4" />
-                    Favori
-                  </div>
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
+                    onClick={(event) => toggleFavorite(event, post.id)}
+                    aria-pressed={favoriteSet.has(post.id)}
+                    aria-label={
+                      favoriteSet.has(post.id)
+                        ? "Favoriden çıkar"
+                        : "Favoriye ekle"
+                    }
+                  >
+                    <Heart
+                      className={`size-4 ${
+                        favoriteSet.has(post.id)
+                          ? "fill-red-500 text-red-500"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                    {favoriteSet.has(post.id)
+                      ? "Favoriden çıkar"
+                      : "Favoriye ekle"}
+                  </button>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MessageSquare className="size-4" />
                     Yorumlar

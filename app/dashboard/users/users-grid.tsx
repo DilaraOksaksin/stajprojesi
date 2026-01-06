@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowUpRight, Heart } from "lucide-react";
 import type { User } from "@/types/user";
+import { createActivityEntry } from "@/app/lib/activity-log";
+import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 
 const FAVORITES_KEY = "favoriteUsers";
@@ -37,15 +39,31 @@ export default function UsersGrid({ users }: UsersGridProps) {
     FAVORITES_KEY,
     []
   );
+  const [isMounted, setIsMounted] = useState(false);
+  const { addActivity } = useActivityLog();
 
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const toggleFavorite = (userId: number) => {
+    const wasFavorite = favoriteSet.has(userId);
     setFavoriteIds((prev) => {
       const exists = prev.includes(userId);
       const next = exists ? prev.filter((id) => id !== userId) : [...prev, userId];
       return next;
     });
+    addActivity(
+      createActivityEntry({
+        type: "Favori",
+        tag: `[USER:${userId}]`,
+        text: wasFavorite
+          ? "Kullanıcı favorilerden çıkarıldı"
+          : "Kullanıcı favorilere eklendi",
+      })
+    );
   };
 
   return (
@@ -53,7 +71,7 @@ export default function UsersGrid({ users }: UsersGridProps) {
       {users.map((user) => {
         const role = user.id % 2 === 0 ? "Admin" : "User";
         const avatarClass = avatarColorClasses[user.id % avatarColorClasses.length];
-        const isFavorite = favoriteSet.has(user.id);
+        const isFavorite = isMounted && favoriteSet.has(user.id);
 
         return (
           <Card key={user.id} className="py-4">
