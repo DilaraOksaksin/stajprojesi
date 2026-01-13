@@ -52,6 +52,8 @@ type PostsPageClientProps = {
 };
 
 export default function PostsPageClient({ posts }: PostsPageClientProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [page, setPage] = useState(1);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activePost, setActivePost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -64,10 +66,15 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
     []
   );
   const { addActivity } = useActivityLog();
+  const mountedFavorites = isMounted ? favoritePostIds : [];
   const favoriteSet = useMemo(
-    () => new Set(favoritePostIds),
-    [favoritePostIds]
+    () => new Set(mountedFavorites),
+    [mountedFavorites]
   );
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const filteredPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -86,6 +93,18 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
     }
     return next;
   }, [filteredPosts, sortOrder]);
+
+  const PAGE_SIZE = 30;
+  const totalPages = Math.max(1, Math.ceil(sortedPosts.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(page, 1), totalPages);
+  const pagedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return sortedPosts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [currentPage, sortedPosts]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, sortOrder]);
 
   const featuredPosts = useMemo(() => {
     return [...filteredPosts]
@@ -211,7 +230,7 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
               </p>
             </div>
 
-            {sortedPosts.map((post) => (
+            {pagedPosts.map((post) => (
               <Card
                 key={post.id}
                 className="gap-4 cursor-pointer transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -258,7 +277,7 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
                 </CardFooter>
               </Card>
             ))}
-            {sortedPosts.length === 0 ? (
+            {pagedPosts.length === 0 ? (
               <Card className="gap-3">
                 <CardHeader className="pb-0">
                   <CardTitle className="text-base">Sonuç bulunamadı</CardTitle>
@@ -267,6 +286,29 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
                   Arama kriterinizi değiştirip tekrar deneyin.
                 </CardContent>
               </Card>
+            ) : null}
+            {totalPages > 1 ? (
+              <nav className=" flex flex-wrap items-center justify-center gap-2 pt-4">
+                {Array.from({ length: totalPages }, (_, index) => {
+                  const pageNumber = index + 1;
+                  const isActive = pageNumber === currentPage;
+                  return (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => setPage(pageNumber)}
+                      aria-current={isActive ? "page" : undefined}
+                      className={
+                        isActive
+                          ? "rounded-md border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                          : "rounded-md border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+              </nav>
             ) : null}
           </div>
 

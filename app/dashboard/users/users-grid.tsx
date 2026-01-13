@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/app/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { ArrowUpRight, Heart } from "lucide-react";
 import type { User } from "@/types/user";
 import { createActivityEntry } from "@/app/lib/activity-log";
@@ -60,7 +60,7 @@ export default function UsersGrid({ users }: UsersGridProps) {
         type: "Favori",
         tag: `[USER:${userId}]`,
         text: wasFavorite
-          ? "Kullanıcı favorilerden çıkarıldı"
+          ? "Kullanıcı favorilerden kaldırdı"
           : "Kullanıcı favorilere eklendi",
       })
     );
@@ -101,7 +101,7 @@ export default function UsersGrid({ users }: UsersGridProps) {
                     Favori
                   </Button>
                   <Button size="sm" className="flex-1" asChild>
-                    <Link href={`/users/${user.id}`}>
+                    <Link href={`/dashboard/users/${user.id}`}>
                       Detay
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>

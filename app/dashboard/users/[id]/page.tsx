@@ -1,9 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/app/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import type { User } from "@/types/user";
 
 type Post = {
@@ -20,19 +19,28 @@ function getInitials(name: string) {
 }
 
 async function getUser(id: string): Promise<User | null> {
-  const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }
 
 async function getPosts(id: string): Promise<Post[]> {
-  const res = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await fetch(
+      `https://jsonplaceholder.typicode.com/posts?userId=${id}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -49,11 +57,25 @@ export async function generateMetadata({
 
 export default async function UserDetailPage({ params }: { params: { id: string } }) {
   const user = await getUser(params.id);
+  const posts = await getPosts(params.id);
+
   if (!user) {
-    notFound();
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Kullanıcı bulunamadı</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Kullanıcı bilgileri alınamadı. Lütfen daha sonra tekrar deneyin.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
-  const posts = await getPosts(params.id);
   const role = user.id % 2 === 0 ? "Admin" : "User";
   const historyItems = posts
     .slice(0, 3)
@@ -94,7 +116,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
 
       <Card>
         <CardHeader>
-          <CardTitle>Gecmis Hareketleri</CardTitle>
+          <CardTitle>Geçmiş Hareketleri</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {historyItems.length === 0 ? (
@@ -122,7 +144,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
             posts.map((post) => (
               <Link
                 key={post.id}
-                href={`/posts/${post.id}`}
+                href={`/post/${post.id}`}
                 className="block rounded-md border border-border px-3 py-2 text-sm transition hover:bg-muted"
               >
                 {post.title}

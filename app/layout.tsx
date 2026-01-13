@@ -27,11 +27,11 @@ export default function RootLayout({
             <div className="flex flex-1 overflow-hidden">
               <AppSidebar />
 
-              <SidebarInset className="flex-1 overflow-y-auto">
+              <SidebarInset className="flex-1 overflow-y-auto flex flex-col">
                 {/* HEADER */}
                 <Header />
 
-                <main className="p-8">
+                <main className="p-8 flex-1">
                   <PageTitle />
                   {children}
                 </main>

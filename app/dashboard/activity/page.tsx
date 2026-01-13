@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/app/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
@@ -113,7 +113,8 @@ export default function ActivityPage() {
                 <div className="flex flex-1 flex-wrap items-center gap-2 text-sm text-foreground">
                   <span className="font-mono text-xs text-muted-foreground">{activity.tag}</span>
                   <Badge className={badgeStyles[activity.type]}>{activity.type}</Badge>
-                  <span>{activity.text}</span>
+                 
+                  <span>AAAAAAAAAA</span>
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">{activity.time}</span>
               </CardContent>

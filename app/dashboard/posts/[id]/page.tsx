@@ -1,9 +1,9 @@
-import {
+﻿import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/app/components/ui/card";
 import type { Metadata } from "next";
   
   type Post = {
@@ -42,9 +42,9 @@ import type { Metadata } from "next";
   }): Promise<Metadata> {
     try {
       const post = await getPost(params.id)
-      return { title: post?.title ?? "Gönderi" }
+      return { title: post?.title ?? "GÃ¶nderi" }
     } catch {
-      return { title: "Gönderi" }
+      return { title: "GÃ¶nderi" }
     }
   }
   

@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import FavoriButonu from "@/components/FavoriButonu";
+import FavoriButonu from "@/app/components/FavoriButonu";
 
 interface Post {
   userId: number;
@@ -45,19 +45,19 @@ export default function UserPostsPage() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        Yükleniyor...
+        YÃ¼kleniyor...
       </div>
     );
 
   if (error)
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
-        <p>Bir hata oluştu: {error}</p>
+        <p>Bir hata oluÅŸtu: {error}</p>
         <button
           onClick={() => router.push("/")}
           className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg transition"
         >
-          Ana Sayfaya Dön
+          Ana Sayfaya DÃ¶n
         </button>
       </div>
     );
@@ -77,10 +77,10 @@ export default function UserPostsPage() {
               key={post.id}
               className="relative bg-card border border-border hover:bg-accent backdrop-blur-sm p-6 rounded-2xl shadow-lg transition-all"
             >
-              {/* Favori Butonu - Sol Üst Köşe */}
+              {/* Favori Butonu */}
               <FavoriButonu id={post.id} />
               
-              {/* Post İçeriği */}
+              {/* Post */}
               <div className="mt-8">
                 <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                   <span>Post #{post.id}</span>

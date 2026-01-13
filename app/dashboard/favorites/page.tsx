@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/app/components/ui/card";
@@ -15,6 +15,7 @@ type Post = {
 
 const FAVORITE_POSTS_KEY = "favorites";
 const FAVORITE_USERS_KEY = "favoriteUsers";
+const PAGE_SIZE = 10;
 
 export default function FavoritesPage() {
   const [favoritePostIds, setFavoritePostIds] = useLocalStorage<number[]>(
@@ -27,6 +28,13 @@ export default function FavoritesPage() {
   );
   const [favoritePosts, setFavoritePosts] = useState<Post[]>([]);
   const [favoriteUsers, setFavoriteUsers] = useState<User[]>([]);
+  const [userPage, setUserPage] = useState(1);
+  const [postPage, setPostPage] = useState(1);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     let isActive = true;
@@ -105,6 +113,27 @@ export default function FavoritesPage() {
     [favoritePostIds, favoriteUserIds]
   );
 
+  useEffect(() => {
+    setUserPage(1);
+  }, [favoriteUsers.length]);
+
+  useEffect(() => {
+    setPostPage(1);
+  }, [favoritePosts.length]);
+
+  const totalUserPages = Math.max(1, Math.ceil(favoriteUsers.length / PAGE_SIZE));
+  const totalPostPages = Math.max(1, Math.ceil(favoritePosts.length / PAGE_SIZE));
+  const currentUserPage = Math.min(Math.max(userPage, 1), totalUserPages);
+  const currentPostPage = Math.min(Math.max(postPage, 1), totalPostPages);
+  const pagedUsers = useMemo(() => {
+    const startIndex = (currentUserPage - 1) * PAGE_SIZE;
+    return favoriteUsers.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [currentUserPage, favoriteUsers]);
+  const pagedPosts = useMemo(() => {
+    const startIndex = (currentPostPage - 1) * PAGE_SIZE;
+    return favoritePosts.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [currentPostPage, favoritePosts]);
+
   const removeFavoritePost = (postId: number) => {
     const next = favoritePostIds.filter((id) => id !== postId);
     setFavoritePostIds(next);
@@ -116,6 +145,10 @@ export default function FavoritesPage() {
     setFavoriteUserIds(next);
     setFavoriteUsers((prev) => prev.filter((user) => user.id !== userId));
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
@@ -140,7 +173,7 @@ export default function FavoritesPage() {
             <div className="space-y-3">
               <p className="text-sm font-semibold text-muted-foreground">Kullanıcılar</p>
               <div className="flex flex-col gap-3">
-                {favoriteUsers.map((user) => (
+                {pagedUsers.map((user) => (
                   <Card key={user.id}>
                     <CardContent className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
                       <div>
@@ -160,6 +193,29 @@ export default function FavoritesPage() {
                   </Card>
                 ))}
               </div>
+              {totalUserPages >= 1 ? (
+                <nav className="flex flex-wrap items-center justify-center gap-2 pt-4">
+                  {Array.from({ length: totalUserPages }, (_, index) => {
+                    const pageNumber = index + 1;
+                    const isActive = pageNumber === currentUserPage;
+                    return (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        onClick={() => setUserPage(pageNumber)}
+                        aria-current={isActive ? "page" : undefined}
+                        className={
+                          isActive
+                            ? "rounded-md border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                            : "rounded-md border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        }
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
+                </nav>
+              ) : null}
             </div>
           ) : null}
 
@@ -167,7 +223,7 @@ export default function FavoritesPage() {
             <div className="space-y-3">
               <p className="text-sm font-semibold text-muted-foreground">Gönderiler</p>
               <div className="flex flex-col gap-3">
-                {favoritePosts.map((post) => (
+                {pagedPosts.map((post) => (
                   <Card key={post.id}>
                     <CardContent className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
                       <div>
@@ -187,6 +243,29 @@ export default function FavoritesPage() {
                   </Card>
                 ))}
               </div>
+              {totalPostPages >= 1 ? (
+                <nav className="flex flex-wrap items-center justify-center gap-2 pt-4">
+                  {Array.from({ length: totalPostPages }, (_, index) => {
+                    const pageNumber = index + 1;
+                    const isActive = pageNumber === currentPostPage;
+                    return (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        onClick={() => setPostPage(pageNumber)}
+                        aria-current={isActive ? "page" : undefined}
+                        className={
+                          isActive
+                            ? "rounded-md border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                            : "rounded-md border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        }
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
+                </nav>
+              ) : null}
             </div>
           ) : null}
         </div>

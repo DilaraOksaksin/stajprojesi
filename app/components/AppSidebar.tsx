@@ -28,7 +28,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 
 type NavItem =
   | { title: string; url: string; icon: React.ComponentType }
@@ -67,7 +67,6 @@ const navigationGroups: NavGroup[] = [
         children: [
           { title: "Görünüm", url: "/dashboard/settings/appearance" },
           { title: "Gizlilik ve Güvenlik", url: "/dashboard/settings/privacy" },
-          { title: "Diller", url: "/dashboard/settings/languages" },
         ],
       },
     ],
@@ -109,6 +108,9 @@ export default function AppSidebar() {
               <SidebarMenu>
                 {group.items.map((item) => {
                   const isActive = "url" in item ? isActivePath(item.url) : false;
+                  const hasActiveChild =
+                    "children" in item &&
+                    item.children.some((child) => isActivePath(child.url));
                   return (
                     <SidebarMenuItem key={item.title}>
                       {"children" in item ? (
@@ -116,7 +118,7 @@ export default function AppSidebar() {
                           <SidebarMenuButton
                             onClick={() => setSettingsOpen((open) => !open)}
                             className={
-                              settingsOpen
+                              hasActiveChild
                                 ? "bg-primary text-primary-foreground"
                                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                             }
@@ -164,12 +166,12 @@ export default function AppSidebar() {
                               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                           }
                         >
-                        <Link href={item.url} aria-current={isActive ? "page" : undefined}>
-                          <item.icon />
-                          <span className="group-data-[state=collapsed]:hidden">
-                            {item.title}
-                          </span>
-                        </Link>
+                          <Link href={item.url} aria-current={isActive ? "page" : undefined}>
+                            <item.icon />
+                            <span className="group-data-[state=collapsed]:hidden">
+                              {item.title}
+                            </span>
+                          </Link>
                         </SidebarMenuButton>
                       )}
                     </SidebarMenuItem>
@@ -182,13 +184,15 @@ export default function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="border-sidebar-border bg-sidebar-accent/30 flex items-center gap-3 rounded-lg border p-2">
+        <div className="border-sidebar-border bg-sidebar-accent/30 flex items-center gap-3 rounded-lg border p-2 group-data-[state=collapsed]:hidden">
           <Avatar className="h-9 w-9">
-          <AvatarImage src="/avatar.png" alt="Dilara Okşaksin" />
-          <AvatarFallback>DO</AvatarFallback>
+            <AvatarImage src="/avatar.png" alt="Dilara OkÅŸaksin" />
+            <AvatarFallback>DO</AvatarFallback>
           </Avatar>
-          <div className="flex min-w-0 flex-1 flex-col text-xs group-data-[state=collapsed]:hidden">
-            <span className="truncate font-semibold text-sidebar-foreground">Dilara Okşaksin</span>
+          <div className="flex min-w-0 flex-1 flex-col text-xs">
+            <span className="truncate font-semibold text-sidebar-foreground">Dilara 
+              Okşaksin
+            </span>
             <span className="text-sidebar-foreground/60">Admin</span>
           </div>
         </div>
@@ -198,7 +202,3 @@ export default function AppSidebar() {
     </Sidebar>
   );
 }
-
-
-
-

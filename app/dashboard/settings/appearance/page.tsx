@@ -3,6 +3,13 @@
 import { useTheme } from "next-themes";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
+import { Check, ChevronDown } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/app/components/ui/dropdown-menu";
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -10,49 +17,84 @@ export default function AppearancePage() {
   const { theme, setTheme } = useTheme();
   const mode = (theme ?? "system") as ThemeMode;
 
+  const modeLabels = {
+    light: "Açık",
+    dark: "Koyu",
+    system: "Sistem"
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Görünüm</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Uygulamanın görünümünü özelleştirin.</p>
       </div>
 
-      <Card>
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="space-y-6 pt-6">
-          <div className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Tema</p>
-              <p className="text-xs text-muted-foreground">Chrome Renkleri</p>
+          
+          {/* TEMA SIFIRLAMA */}
+          <div className="flex items-center justify-between border-b border-border pb-6">
+            <div className="select-none pointer-events-none">
+              <p className="text-sm font-medium">Varsayılan Tema</p>
+              <p className="text-xs text-muted-foreground">Ayarları sıfırlayın.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setTheme("system")}>
-              Varsayılana sıfırla
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setTheme("system")}
+              style={{ cursor: 'pointer' }}
+            >
+              Sıfırla
             </Button>
           </div>
 
-          <div className="flex items-center justify-between border-b border-border pb-6">
-            <div>
-              <p className="text-sm font-medium text-foreground">Araç çubuğunuzu özelleştirin</p>
+          {/* MOD SEÇİMİ (Sorunu Kökten Çözen Yeni Yapı) */}
+          <div className="flex items-center justify-between">
+            <div className="select-none pointer-events-none">
+              <p className="text-sm font-medium">Görünüm Modu</p>
             </div>
-            <span className="text-xs text-muted-foreground">Yeni sekme</span>
+            
+            {/* DropdownMenu kullanarak tarayıcının o bozuk select kutusundan kurtuluyoruz */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-48 justify-between"
+                  style={{ cursor: 'pointer' }}
+                >
+                  {modeLabels[mode]}
+                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  style={{ cursor: 'pointer' }} 
+                  onClick={() => setTheme("light")}
+                  className="justify-between"
+                >
+                  Açık {mode === "light" && <Check className="h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  style={{ cursor: 'pointer' }} 
+                  onClick={() => setTheme("dark")}
+                  className="justify-between"
+                >
+                  Koyu {mode === "dark" && <Check className="h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  style={{ cursor: 'pointer' }} 
+                  onClick={() => setTheme("system")}
+                  className="justify-between"
+                >
+                  Sistem {mode === "system" && <Check className="h-4 w-4" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Mod</p>
-            </div>
-            <select
-              value={mode}
-              onChange={(event) => setTheme(event.target.value as ThemeMode)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring md:w-48"
-            >
-              <option value="light">Açık</option>
-              <option value="dark">Koyu</option>
-              <option value="system">Sistem</option>
-            </select>
-          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-

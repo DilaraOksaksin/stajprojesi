@@ -1,51 +1,103 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, ChevronDown, PanelLeftIcon, Search, User } from "lucide-react";
+import { Bell, PanelLeftIcon, Search } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useSidebar } from "@/app/components/ui/sidebar";
-import { useLocalStorage } from "@/app/lib/useLocalStorage";
 
-type StoredUser = {
-  name: string;
-};
+const NOTIFICATIONS = [
+  "Dilara Okşaksin favorilere eklendi",
+  "Kullanıcı #12 profili güncelledi",
+  "Yeni gönderi paylaşıldı",
+  "Aktivite raporu indirildi",
+  "Kullanıcı #7 hesap doğruladı",
+  "Yorum bildirimi alındı",
+  "Yeni kullanıcı kayıt oldu",
+  "Rapor başarıyla oluşturuldu",
+  "Sistem bakımı planlandı",
+  "Şüpheli giriş engellendi",
+  "Yeni mesaj alındı",
+  "Kullanıcı şifresini güncelledi",
+];
 
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+const NOTIFICATION_PAGE_SIZE = 10;
+
+const SIDEBAR_LINKS = [
+  { label: "Kullanıcılar", href: "/dashboard/users" },
+  { label: "Gönderiler", href: "/dashboard/posts" },
+  { label: "Favoriler", href: "/dashboard/favorites" },
+  { label: "Aktivite", href: "/dashboard/logs" },
+  { label: "Ayarlar - Görünüm", href: "/dashboard/settings/appearance" },
+  { label: "Ayarlar - Gizlilik ve Güvenlik", href: "/dashboard/settings/privacy" },
+];
 
 export default function Header() {
   const { toggleSidebar } = useSidebar();
-  const [accountOpen, setAccountOpen] = useState(false);
   const [feedOpen, setFeedOpen] = useState(false);
-  const [user, setUser] = useLocalStorage<StoredUser | null>("user", null);
+  const [notificationPage, setNotificationPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const feedRef = useRef<HTMLDivElement | null>(null);
-  const accountRef = useRef<HTMLDivElement | null>(null);
-
-  const initials = user ? getInitials(user.name) : "";
+  const searchRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!feedOpen && !accountOpen) return;
+    if (!feedOpen) return;
 
     const handlePointerDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
       if (!target) return;
       if (feedRef.current?.contains(target)) return;
-      if (accountRef.current?.contains(target)) return;
       setFeedOpen(false);
-      setAccountOpen(false);
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [feedOpen, accountOpen]);
+  }, [feedOpen]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (searchRef.current?.contains(target)) return;
+      setSearchOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!feedOpen) return;
+    setNotificationPage(1);
+  }, [feedOpen]);
+
+  const notificationTotalPages = Math.max(
+    1,
+    Math.ceil(NOTIFICATIONS.length / NOTIFICATION_PAGE_SIZE)
+  );
+  const safeNotificationPage = Math.min(
+    Math.max(notificationPage, 1),
+    notificationTotalPages
+  );
+  const notificationStart = (safeNotificationPage - 1) * NOTIFICATION_PAGE_SIZE;
+  const pagedNotifications = NOTIFICATIONS.slice(
+    notificationStart,
+    notificationStart + NOTIFICATION_PAGE_SIZE
+  );
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredLinks = useMemo(() => {
+    if (!normalizedSearch) return [];
+    return SIDEBAR_LINKS.filter((item) =>
+      item.label.toLowerCase().includes(normalizedSearch)
+    );
+  }, [normalizedSearch]);
 
   return (
     <header className="relative z-50 border-b border-border bg-background">
@@ -59,14 +111,39 @@ export default function Header() {
           <span className="sr-only">Toggle sidebar</span>
         </Button>
 
-        <div className="relative flex w-full max-w-xs items-center">
+        <div className="relative flex w-full max-w-xs items-center" ref={searchRef}>
           <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Ara..."
             className="h-9 w-full pl-9"
-            aria-label="Sayfada ara"
+            aria-label="Sidebarda ara"
+            value={searchTerm}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
           />
+          {searchOpen && normalizedSearch && filteredLinks.length > 0 ? (
+            <div className="absolute left-0 top-full z-50 mt-2 w-full rounded-md border border-border bg-background shadow-md">
+              <div className="flex flex-col">
+                {filteredLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="px-3 py-2 text-sm text-foreground hover:bg-accent"
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setSearchTerm("");
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3">
@@ -77,7 +154,6 @@ export default function Header() {
               className="relative"
               onClick={() => {
                 setFeedOpen((open) => !open);
-                setAccountOpen(false);
               }}
               aria-expanded={feedOpen}
               aria-haspopup="dialog"
@@ -93,14 +169,8 @@ export default function Header() {
                     <p className="text-sm font-semibold text-foreground">Bildirim Merkezi</p>
                     <p className="text-xs text-muted-foreground">Son loglar</p>
                   </div>
-                  <div className="space-y-2">
-                    {[
-                      "Dilara Okşaksin favorilere eklendi",
-                      "Kullanıcı #12 profili güncelledi",
-                      "Yeni gönderi paylaşıldı",
-                      "Aktivite raporu indirildi",
-                      "Kullanıcı #7 hesap doğruladı",
-                    ].map((item, index) => (
+                  <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                    {pagedNotifications.map((item, index) => (
                       <div
                         key={`${item}-${index}`}
                         className="rounded-md border border-border px-3 py-2 text-xs text-foreground"
@@ -109,74 +179,38 @@ export default function Header() {
                       </div>
                     ))}
                   </div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-          <div className="relative" ref={accountRef}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-2 px-2"
-              onClick={() => {
-                setAccountOpen((open) => !open);
-                setFeedOpen(false);
-              }}
-              aria-expanded={accountOpen}
-              aria-haspopup="menu"
-            >
-              {user ? (
-                <span className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                  {initials}
-                </span>
-              ) : (
-                <User className="size-4" />
-              )}
-              <span className="text-sm font-medium">
-                {user ? user.name : "Hesabım"}
-              </span>
-              <ChevronDown className="size-4" />
-            </Button>
-            {accountOpen ? (
-              <div
-                className="absolute right-0 mt-2 w-56 rounded-md border border-border bg-background shadow-sm"
-                role="menu"
-              >
-                {user ? (
-                  <>
-                    <div className="px-3 py-2 text-sm font-semibold">
-                      {user.name}
+                  {notificationTotalPages > 1 ? (
+                    <div className="flex items-center justify-between gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setNotificationPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={safeNotificationPage === 1}
+                      >
+                        Önceki
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        {safeNotificationPage} / {notificationTotalPages}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setNotificationPage((prev) =>
+                            Math.min(prev + 1, notificationTotalPages)
+                          )
+                        }
+                        disabled={safeNotificationPage === notificationTotalPages}
+                      >
+                        Sonraki
+                      </Button>
                     </div>
-                    <button
-                      type="button"
-                      className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                      role="menuitem"
-                      onClick={() => {
-                        setUser(null);
-                        setAccountOpen(false);
-                      }}
-                    >
-                      Çıkış yap
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/giris"
-                      className="block px-3 py-2 text-sm hover:bg-muted"
-                      role="menuitem"
-                    >
-                      Giriş yap
-                    </Link>
-                    <Link
-                      href="/uye-ol"
-                      className="block px-3 py-2 text-sm hover:bg-muted"
-                      role="menuitem"
-                    >
-                      Üye ol
-                    </Link>
-                  </>
-                )}
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>
@@ -185,13 +219,3 @@ export default function Header() {
     </header>
   );
 }
-
-
-
-
-
-
-
-
-
-

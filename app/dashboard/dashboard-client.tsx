@@ -10,47 +10,25 @@ import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import { activities } from "@/app/dashboard/activity/activity-data";
 
-type User = {
-  id: number;
+// Tipleri açıkça tanımlayalım
+interface User { id: number; name?: string; }
+interface Post { id: number; title?: string; }
+
+// Veri çekme fonksiyonlarını en basit ve hata vermez hale getirelim
+const fetchUsers = async (): Promise<User[]> => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/users");
+  return res.ok ? res.json() : [];
 };
 
-type Post = {
-  id: number;
+const fetchPosts = async (): Promise<Post[]> => {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  return res.ok ? res.json() : [];
 };
-
-type DashboardClientProps = {
-  title?: string;
-  subtitle?: string;
-};
-
-async function getUsers(): Promise<User[]> {
-  try {
-    const res = await fetch("https://jsonplaceholder.typicode.com/users", {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
-}
-
-async function getPosts(): Promise<Post[]> {
-  try {
-    const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
-}
 
 export default function DashboardClient({
   title = "Dashboard",
-  subtitle = "HoY geldiniz.",
-}: DashboardClientProps) {
+  subtitle = "Hoş geldiniz.", 
+}) {
   const [isMounted, setIsMounted] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -59,51 +37,48 @@ export default function DashboardClient({
   const [favoritePosts] = useLocalStorage<number[]>("favorites", []);
   const { entries: activityEntries } = useActivityLog();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  useEffect(() => { setIsMounted(true); }, []);
 
   useEffect(() => {
     let isActive = true;
-
-    const loadData = async () => {
+    
+    async function loadData() {
       setIsLoading(true);
-      const [usersData, postsData] = await Promise.all([getUsers(), getPosts()]);
-      if (!isActive) return;
-      setUsers(usersData);
-      setPosts(postsData);
-      setIsLoading(false);
-    };
+      try {
+        // Promise.all kullanımını basitleştirdik
+        const results = await Promise.all([fetchUsers(), fetchPosts()]);
+        
+        if (isActive) {
+          setUsers(results[0]);
+          setPosts(results[1]);
+        }
+      } catch (error) {
+        console.error("Veri yüklenemedi:", error);
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    }
 
     loadData();
-
-    return () => {
-      isActive = false;
-    };
+    return () => { isActive = false; };
   }, []);
 
   const stats = [
     { title: "Toplam Kullanıcı", value: users.length, icon: Users },
     { title: "Toplam Gönderi", value: posts.length, icon: FileText },
-    {
-      title: "Favori Sayısı",
-      value: favoriteUsers.length + favoritePosts.length,
-      icon: Star,
-    },
+    { title: "Favori Sayısı", value: favoriteUsers.length + favoritePosts.length, icon: Star },
   ];
 
   const recentActivities = useMemo(() => {
     if (!isMounted) return activities.slice(0, 3);
-    const source = activityEntries.length
-      ? activityEntries.map(mapActivityEntry)
-      : activities;
+    const source = activityEntries.length ? activityEntries.map(mapActivityEntry) : activities;
     return source.slice(0, 3);
   }, [activityEntries, isMounted]);
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">{title}</h1>
+        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
       </div>
 
@@ -111,53 +86,51 @@ export default function DashboardClient({
         {stats.map((item) => (
           <Card
             key={item.title}
-            className="bg-slate-50/50 transition-shadow hover:shadow-md"
+            style={{ cursor: 'pointer' }}
+            className="bg-card text-card-foreground transition-all hover:bg-accent/10 hover:shadow-md active:scale-95 border-border select-none"
           >
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-semibold tracking-tight text-muted-foreground">
-                {item.title}
-              </CardTitle>
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <p className="text-3xl font-semibold tracking-tight text-foreground">
-                  {item.value}
-                </p>
-              )}
-            </CardContent>
+            <div className="pointer-events-none p-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {item.title}
+                </CardTitle>
+                <item.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  <div className="text-2xl font-bold text-foreground">{item.value}</div>
+                )}
+              </CardContent>
+            </div>
           </Card>
         ))}
       </div>
 
-      <Card className="bg-slate-50/50 transition-shadow hover:shadow-md">
+      <Card className="bg-card text-card-foreground border-border">
         <CardHeader>
-          <CardTitle className="tracking-tight">Son Hareketler</CardTitle>
+          <CardTitle className="text-foreground">Son Hareketler</CardTitle>
         </CardHeader>
         <CardContent>
-          {recentActivities.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              HenÇ¬z bir hareket kaydedilmedi.
-            </p>
-          ) : (
-            <div className="space-y-3 text-sm">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {activity.tag}
-                    </span>
-                    <span className="text-foreground">{activity.text}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {activity.time}
-                  </span>
+          <div className="space-y-4">
+            {recentActivities.map((activity) => (
+              <div 
+                key={activity.id} 
+                style={{ cursor: 'pointer' }}
+                className="flex items-center gap-4 rounded-lg border border-border p-3 transition-colors hover:bg-accent/10 select-none group"
+              >
+                <div className="flex-1 space-y-1 pointer-events-none">
+                  <p className="text-sm font-medium leading-none text-foreground group-hover:text-primary transition-colors">
+                    {activity.text}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {activity.tag} • {activity.time}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

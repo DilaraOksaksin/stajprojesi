@@ -38,6 +38,7 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const basePath = "/dashboard/users";
+  const PAGE_SIZE = 10;
   const initialQuery = searchParams.get("q") ?? "";
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [debouncedTerm, setDebouncedTerm] = useState(initialQuery);
@@ -45,6 +46,7 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const qParam = searchParams.get("q") ?? "";
@@ -105,6 +107,17 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
 
     return next;
   }, [users, debouncedTerm, roleFilter, statusFilter, sortOption]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedTerm, roleFilter, statusFilter, sortOption]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(page, 1), totalPages);
+  const pagedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [currentPage, filteredUsers]);
 
   return (
     <div className="space-y-6">
@@ -204,7 +217,32 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
           ))}
         </div>
       ) : (
-        <UsersGrid users={filteredUsers} />
+        <>
+          <UsersGrid users={pagedUsers} />
+          {totalPages >= 1 ? (
+            <nav className="flex flex-wrap items-center justify-center gap-2 pt-4">
+              {Array.from({ length: totalPages }, (_, index) => {
+                const pageNumber = index + 1;
+                const isActive = pageNumber === currentPage;
+                return (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setPage(pageNumber)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={
+                      isActive
+                        ? "rounded-md border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                        : "rounded-md border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+            </nav>
+          ) : null}
+        </>
       )}
     </div>
   );

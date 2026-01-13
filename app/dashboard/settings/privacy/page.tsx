@@ -30,23 +30,32 @@ export default function PrivacySettingsPage() {
           <CardTitle>Hesap Güvenliği</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">İki Faktörlü Doğrulama (2FA)</p>
+          {/* 2FA SATIRI */}
+          <div 
+            style={{ cursor: 'pointer' }}
+            className="flex items-start justify-between gap-4 select-none hover:bg-slate-50/50 p-2 rounded-lg transition-colors group"
+          >
+            <div className="pointer-events-none">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">İki Faktörlü Doğrulama (2FA)</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Hesabınızın güvenliğini artırmak için ek doğrulama adımı ekler.
               </p>
             </div>
-            <Switch />
+            <Switch style={{ cursor: 'pointer' }} />
           </div>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">Giriş Bildirimleri</p>
+
+          {/* GİRİŞ BİLDİRİMLERİ SATIRI */}
+          <div 
+            style={{ cursor: 'pointer' }}
+            className="flex items-start justify-between gap-4 select-none hover:bg-slate-50/50 p-2 rounded-lg transition-colors group"
+          >
+            <div className="pointer-events-none">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">Giriş Bildirimleri</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Yeni bir cihazdan giriş yapıldığında bildirim alın.
               </p>
             </div>
-            <Switch />
+            <Switch style={{ cursor: 'pointer' }} />
           </div>
         </CardContent>
       </Card>
@@ -56,25 +65,34 @@ export default function PrivacySettingsPage() {
           <CardTitle>Veri Gizliliği</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">
+          {/* PROFİL GİZLEME SATIRI */}
+          <div 
+            style={{ cursor: 'pointer' }}
+            className="flex items-start justify-between gap-4 select-none hover:bg-slate-50/50 p-2 rounded-lg transition-colors group"
+          >
+            <div className="pointer-events-none">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">
                 Profilimi Diğer Kullanıcılara Gizle
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Profil bilgileriniz sadece sizin tarafınızdan görüntülenir.
               </p>
             </div>
-            <Switch />
+            <Switch style={{ cursor: 'pointer' }} />
           </div>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">Aktivite Günlüklerini Tut</p>
+
+          {/* AKTİVİTE GÜNLÜĞÜ SATIRI */}
+          <div 
+            style={{ cursor: 'pointer' }}
+            className="flex items-start justify-between gap-4 select-none hover:bg-slate-50/50 p-2 rounded-lg transition-colors group"
+          >
+            <div className="pointer-events-none">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">Aktivite Günlüklerini Tut</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Oturum ve hareket kayıtları daha uzun süre saklanır.
               </p>
             </div>
-            <Switch />
+            <Switch style={{ cursor: 'pointer' }} />
           </div>
         </CardContent>
       </Card>
@@ -84,10 +102,16 @@ export default function PrivacySettingsPage() {
           <CardTitle>Oturum Yönetimi</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4 text-sm text-muted-foreground">
+          {/* ÇIKIŞ YAZISI */}
+          <p 
+            style={{ cursor: 'pointer' }}
+            className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors select-none"
+          >
             Tüm cihazlardan çıkış yaparak aktif oturumları sonlandırın.
           </p>
-          <Button variant="destructive">Tüm Cihazlardan Çıkış Yap</Button>
+          <Button variant="destructive" style={{ cursor: 'pointer' }}>
+            Tüm Cihazlardan Çıkış Yap
+          </Button>
         </CardContent>
       </Card>
     </div>
