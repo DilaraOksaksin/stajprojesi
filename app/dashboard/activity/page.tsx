@@ -1,127 +1,143 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent } from "@/app/components/ui/card";
-import { Badge } from "@/app/components/ui/badge";
+import { ChevronDown, Search } from "lucide-react";
+// TİPLER MERKEZİ DOSYADAN GELİYOR
+import { Post, PostsPageClientProps, SortOrder } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { Search } from "lucide-react";
-import { activities, type ActivityItem } from "./activity-data";
-import { mapActivityEntry } from "@/app/lib/activity-log";
-import { useActivityLog } from "@/app/lib/useActivityLog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/app/components/ui/sheet";
 
-const badgeStyles: Record<ActivityItem["type"], string> = {
-  Arama: "border-transparent bg-blue-500/15 text-blue-700 hover:bg-blue-500/25 dark:text-blue-200",
-  Favori:
-    "border-transparent bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:text-amber-200",
-  Kayıt:
-    "border-transparent bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:text-emerald-200",
-};
+export default function PostsPageClient({ posts }: PostsPageClientProps) {
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [activePost, setActivePost] = useState<Post | null>(null);
 
-export default function ActivityPage() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const { entries: activityEntries } = useActivityLog();
-
+  // DEBOUNCE EFFECT: Gereksiz render'ı önlemek için
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    const handler = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(handler);
+  }, [query]);
 
-  const sourceActivities = useMemo(() => {
-    if (!isMounted) return activities;
-    return activityEntries.length ? activityEntries.map(mapActivityEntry) : activities;
-  }, [activityEntries, isMounted]);
-  const [typeFilter, setTypeFilter] = useState<"Tümü" | ActivityItem["type"]>("Tümü");
-  const [dateFilter, setDateFilter] = useState<"Tümü" | ActivityItem["dateGroup"]>("Tümü");
+  // SIRALAMA VE FİLTRELEME: "result is not iterable" hatası giderildi
+  const sortedPosts = useMemo(() => {
+    // Güvenlik kontrolü: posts dizi değilse boş dizi dön
+    if (!posts || !Array.isArray(posts)) return [];
 
-  const filteredActivities = useMemo(() => {
-    const normalizedQuery = searchTerm.trim().toLocaleLowerCase("tr-TR");
+    const normalizedQuery = debouncedQuery.trim().toLowerCase();
+    let result = posts;
 
-    return sourceActivities.filter((activity) => {
-      const matchesType = typeFilter === "Tümü" || activity.type === typeFilter;
-      const matchesDate = dateFilter === "Tümü" || activity.dateGroup === dateFilter;
-      const matchesText =
-        normalizedQuery.length === 0 ||
-        `${activity.tag} ${activity.text}`
-          .toLocaleLowerCase("tr-TR")
-          .includes(normalizedQuery);
+    if (normalizedQuery) {
+      result = posts.filter(p => 
+        (p.title + p.body).toLowerCase().includes(normalizedQuery)
+      );
+    }
 
-      return matchesType && matchesDate && matchesText;
-    });
-  }, [searchTerm, typeFilter, dateFilter, sourceActivities]);
+    // Yayma operatöründen önce verinin dizi olduğundan emin oluyoruz
+    const sorted = [...(result || [])].sort((a, b) => a.title.localeCompare(b.title));
+    return sortOrder === "desc" ? sorted.reverse() : sorted;
+  }, [posts, debouncedQuery, sortOrder]);
 
-  const canClearFilters = searchTerm.length > 0 || typeFilter !== "Tümü" || dateFilter !== "Tümü";
+  // SAYFALAMA MANTIĞI: 30 Gönderi
+  const PAGE_SIZE = 30;
+  const totalPages = Math.max(1, Math.ceil(sortedPosts.length / PAGE_SIZE));
+  const pagedPosts = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return sortedPosts.slice(start, start + PAGE_SIZE);
+  }, [page, sortedPosts]);
+
+  // Arama değişince 1. sayfaya dön
+  useEffect(() => { setPage(1); }, [debouncedQuery]);
+
+  const handleCardClick = (post: Post) => {
+    setActivePost(post);
+    setSheetOpen(true);
+  };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Sistem Hareketleri</h1>
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-        <div className="relative w-full min-w-[220px] flex-1 md:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Aktivitelerde ara..."
-            className="pl-9"
+      {/* Üst Bar */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card p-4 rounded-xl border border-border/50">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input 
+            placeholder="Gönderilerde ara..." 
+            className="pl-9" 
+            value={query} 
+            onChange={e => setQuery(e.target.value)} 
           />
         </div>
-        <Tabs value={typeFilter} onValueChange={(value) => setTypeFilter(value as typeof typeFilter)}>
-          <TabsList className="h-9">
-            <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-            <TabsTrigger value="Arama">Arama</TabsTrigger>
-            <TabsTrigger value="Favori">Favori</TabsTrigger>
-            <TabsTrigger value="Kayıt">Kayıt</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <Tabs value={dateFilter} onValueChange={(value) => setDateFilter(value as typeof dateFilter)}>
-          <TabsList className="h-9">
-            <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-            <TabsTrigger value="Bugün">Bugün</TabsTrigger>
-            <TabsTrigger value="Dün">Dün</TabsTrigger>
-            <TabsTrigger value="Son 7 Gün">Son 7 Gün</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setSearchTerm("");
-            setTypeFilter("Tümü");
-            setDateFilter("Tümü");
-          }}
-          disabled={!canClearFilters}
-        >
-          Filtreleri Temizle
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" style={{ cursor: 'pointer' }}>
+              Sırala <ChevronDown className="ml-2 size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem style={{ cursor: 'pointer' }} onClick={() => setSortOrder("asc")}>A'dan Z'ye</DropdownMenuItem>
+            <DropdownMenuItem style={{ cursor: 'pointer' }} onClick={() => setSortOrder("desc")}>Z'den A'ya</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      {filteredActivities.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          {sourceActivities.length === 0
-            ? "Henüz bir hareket kaydedilmedi"
-            : "Filtrelere uygun bir hareket bulunamadı"}
-        </p>
-      ) : (
-        <div className="space-y-2">
-          {filteredActivities.map((activity) => (
-            <Card
-              key={activity.id}
-              className="border border-border/60 transition-colors hover:border-primary/60"
+
+      {/* Gönderi Listesi */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-4">
+          {pagedPosts.map(post => (
+            <Card 
+              key={post.id} 
+              onClick={() => handleCardClick(post)} 
+              className="cursor-pointer transition-all hover:bg-accent/5 border-border/40"
             >
-              <CardContent className="flex items-center gap-4 py-2">
-                <activity.icon className="h-5 w-5 text-muted-foreground" />
-                <div className="flex flex-1 flex-wrap items-center gap-2 text-sm text-foreground">
-                  <span className="font-mono text-xs text-muted-foreground">{activity.tag}</span>
-                  <Badge className={badgeStyles[activity.type]}>{activity.type}</Badge>
-                 
-                  <span>AAAAAAAAAA</span>
-                </div>
-                <span className="font-mono text-xs text-muted-foreground">{activity.time}</span>
-              </CardContent>
+              <CardHeader className="pb-2"><CardTitle className="text-lg font-bold">{post.title}</CardTitle></CardHeader>
+              <CardContent className="text-sm text-muted-foreground">{post.body}</CardContent>
             </Card>
           ))}
+
+          {/* AYRIK KUTULU SAYFALAMA TASARIMI */}
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-center gap-3 py-10">
+              {Array.from({ length: totalPages }, (_, i) => {
+                const pageNum = i + 1;
+                const isActive = page === pageNum;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setPage(pageNum);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`h-10 w-10 flex items-center justify-center rounded-lg text-sm font-bold transition-all shadow-sm ${
+                      isActive 
+                        ? "bg-black text-white dark:bg-white dark:text-black shadow-md scale-105" 
+                        : "bg-white text-black border border-gray-200 hover:border-black dark:bg-transparent dark:text-white"
+                    }`}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Detay Paneli */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent>
+          <SheetHeader><SheetTitle>Gönderi Detayı</SheetTitle></SheetHeader>
+          <div className="mt-6">
+            <h3 className="text-xl font-bold">{activePost?.title}</h3>
+            <p className="mt-4 text-muted-foreground leading-relaxed">{activePost?.body}</p>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
