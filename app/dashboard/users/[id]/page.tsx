@@ -3,13 +3,8 @@ import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
-import type { User } from "@/types/user";
-
-type Post = {
-  id: number;
-  title: string;
-  body: string;
-};
+// 1. ADIM: Merkezi tipleri kullanıyoruz. Dosya içindeki manuel Post tipini sildik.
+import { User, Post } from "@/types"; 
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -43,19 +38,22 @@ async function getPosts(id: string): Promise<Post[]> {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
+// 2. ADIM: Metadata fonksiyonu - Kırmızılığı gidermek için props olarak aldık
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await props.params; // Paketi (Promise) açtık
   const user = await getUser(params.id);
-  if (!user) {
-    return { title: "Kullanıcı" };
-  }
+  
+  if (!user) return { title: "Kullanıcı" };
   return { title: user.name };
 }
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
+// 3. ADIM: Sayfa fonksiyonu - Kırmızılığı gidermek için props olarak aldık
+export default async function UserDetailPage(props: { 
+  params: Promise<{ id: string }> 
+}) {
+  const params = await props.params; // Paketi (Promise) açtık
   const user = await getUser(params.id);
   const posts = await getPosts(params.id);
 
@@ -63,13 +61,9 @@ export default async function UserDetailPage({ params }: { params: { id: string 
     return (
       <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Kullanıcı bulunamadı</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Kullanıcı bulunamadı</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Kullanıcı bilgileri alınamadı. Lütfen daha sonra tekrar deneyin.
-            </p>
+            <p className="text-sm text-muted-foreground">Kullanıcı bilgileri alınamadı.</p>
           </CardContent>
         </Card>
       </div>
@@ -77,9 +71,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
   }
 
   const role = user.id % 2 === 0 ? "Admin" : "User";
-  const historyItems = posts
-    .slice(0, 3)
-    .map((post) => `Gönderi #${post.id} görüntülendi`);
+  const historyItems = posts.slice(0, 3).map((post) => `Gönderi #${post.id} görüntülendi`);
 
   return (
     <div className="space-y-6">
@@ -87,70 +79,41 @@ export default async function UserDetailPage({ params }: { params: { id: string 
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-11 w-11">
-              <AvatarFallback className="text-sm font-semibold">
-                {getInitials(user.name)}
-              </AvatarFallback>
+              <AvatarFallback className="text-sm font-semibold">{getInitials(user.name)}</AvatarFallback>
             </Avatar>
             <div>
               <CardTitle className="text-xl">{user.name}</CardTitle>
               <p className="text-sm text-muted-foreground">@{user.username}</p>
             </div>
           </div>
-          <Badge variant={role === "Admin" ? "success" : "secondary"}>{role}</Badge>
+          <Badge variant={role === "Admin" ? "default" : "secondary"}>{role}</Badge>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <div>
-            <p className="text-xs text-muted-foreground">Email</p>
-            <p className="text-sm font-medium">{user.email}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Telefon</p>
-            <p className="text-sm font-medium">{user.phone}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Web</p>
-            <p className="text-sm font-medium">{user.website}</p>
-          </div>
+          <div><p className="text-xs text-muted-foreground">Email</p><p className="text-sm font-medium">{user.email}</p></div>
+          <div><p className="text-xs text-muted-foreground">Telefon</p><p className="text-sm font-medium">{user.phone}</p></div>
+          <div><p className="text-xs text-muted-foreground">Web</p><p className="text-sm font-medium">{user.website}</p></div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Geçmiş Hareketleri</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {historyItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Kayıt bulunamadı.</p>
-          ) : (
-            <ul className="space-y-2 text-sm text-foreground">
-              {historyItems.map((item, index) => (
-                <li key={`${item}-${index}`} className="rounded-md border border-border px-3 py-2">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          )}
+        <CardHeader><CardTitle>Geçmiş Hareketleri</CardTitle></CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm">
+            {historyItems.map((item, index) => (
+              <li key={index} className="rounded-md border p-2">{item}</li>
+            ))}
+          </ul>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Gönderiler ({posts.length})</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Gönderiler ({posts.length})</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          {posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Gönderi bulunamadı.</p>
-          ) : (
-            posts.map((post) => (
-              <Link
-                key={post.id}
-                href={`/post/${post.id}`}
-                className="block rounded-md border border-border px-3 py-2 text-sm transition hover:bg-muted"
-              >
-                {post.title}
-              </Link>
-            ))
-          )}
+          {posts.map((post) => (
+            <Link key={post.id} href={`/post/${post.id}`} className="block rounded-md border p-2 hover:bg-muted text-sm transition">
+              {post.title}
+            </Link>
+          ))}
         </CardContent>
       </Card>
     </div>

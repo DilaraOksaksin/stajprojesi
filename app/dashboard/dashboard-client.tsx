@@ -10,11 +10,11 @@ import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import { activities } from "@/app/dashboard/activity/activity-data";
 
-// Tipleri açıkça tanımlayalım
+
 interface User { id: number; name?: string; }
 interface Post { id: number; title?: string; }
 
-// Veri çekme fonksiyonlarını en basit ve hata vermez hale getirelim
+
 const fetchUsers = async (): Promise<User[]> => {
   const res = await fetch("https://jsonplaceholder.typicode.com/users");
   return res.ok ? res.json() : [];
@@ -45,7 +45,7 @@ export default function DashboardClient({
     async function loadData() {
       setIsLoading(true);
       try {
-        // Promise.all kullanımını basitleştirdik
+        
         const results = await Promise.all([fetchUsers(), fetchPosts()]);
         
         if (isActive) {

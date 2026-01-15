@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// --- DÜZELTME: TİPLERİ MERKEZİ DOSYADAN ALIYORUZ ---
+import { NavGroup, NavItem } from "@/types";
+
 import {
   Sidebar,
   SidebarContent,
@@ -13,9 +16,8 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarRail,
 } from "./ui/sidebar";
 
@@ -30,19 +32,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 
-type NavItem =
-  | { title: string; url: string; icon: React.ComponentType }
-  | {
-      title: string;
-      icon: React.ComponentType;
-      children: { title: string; url: string }[];
-    };
-
-type NavGroup = {
-  label: string;
-  items: NavItem[];
-};
-
+// Menü Yapılandırması (Bunu istersen ayrı bir constants dosyasına da taşıyabilirsin)
 const navigationGroups: NavGroup[] = [
   {
     label: "YÖNETİM",
@@ -77,6 +67,7 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(true);
 
+  // Aktif yol kontrolü için yardımcı fonksiyon
   const isActivePath = (url?: string) =>
     !!url && (pathname === url || (url !== "/" && pathname.startsWith(`${url}/`)));
 
@@ -86,7 +77,7 @@ export default function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="group">
-              <Link href="/" className="flex items-center gap-3 px-2 py-2">
+              <Link href="/dashboard" className="flex items-center gap-3 px-2 py-2">
                 <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-md shrink-0">
                   <LayoutDashboard className="h-4 w-4" />
                 </div>
@@ -103,7 +94,9 @@ export default function AppSidebar() {
       <SidebarContent>
         {navigationGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="group-data-[state=collapsed]:hidden">
+              {group.label}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -111,6 +104,7 @@ export default function AppSidebar() {
                   const hasActiveChild =
                     "children" in item &&
                     item.children.some((child) => isActivePath(child.url));
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       {"children" in item ? (
@@ -119,55 +113,47 @@ export default function AppSidebar() {
                             onClick={() => setSettingsOpen((open) => !open)}
                             className={
                               hasActiveChild
-                                ? "bg-primary text-primary-foreground"
+                                ? "bg-primary/10 text-primary font-medium"
                                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                             }
-                            aria-expanded={settingsOpen}
-                            aria-controls="settings-submenu"
                           >
-                            <item.icon />
+                            {item.icon && <item.icon />}
                             <span className="group-data-[state=collapsed]:hidden">
                               {item.title}
                             </span>
                           </SidebarMenuButton>
-                          {settingsOpen ? (
-                            <div
-                              id="settings-submenu"
-                              className="mt-1 ml-6 flex flex-col gap-1 group-data-[state=collapsed]:hidden"
-                            >
+                          {settingsOpen && (
+                            <div className="mt-1 ml-6 flex flex-col gap-1 border-l border-border pl-2 group-data-[state=collapsed]:hidden">
                               {item.children.map((child) => {
                                 const isChildActive = isActivePath(child.url);
                                 return (
                                   <Link
                                     key={child.title}
                                     href={child.url}
-                                    aria-current={isChildActive ? "page" : undefined}
-                                    className={
+                                    className={`rounded-md px-2 py-1.5 text-xs transition-colors ${
                                       isChildActive
-                                        ? "rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground"
-                                        : "rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                    }
+                                        ? "bg-primary text-primary-foreground font-medium"
+                                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                    }`}
                                   >
-                                    <span className="group-data-[state=collapsed]:hidden">
-                                      {child.title}
-                                    </span>
+                                    {child.title}
                                   </Link>
                                 );
                               })}
                             </div>
-                          ) : null}
+                          )}
                         </>
                       ) : (
                         <SidebarMenuButton
                           asChild
                           className={
                             isActive
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-primary text-primary-foreground font-medium"
                               : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                           }
                         >
-                          <Link href={item.url} aria-current={isActive ? "page" : undefined}>
-                            <item.icon />
+                          <Link href={item.url}>
+                            {item.icon && <item.icon />}
                             <span className="group-data-[state=collapsed]:hidden">
                               {item.title}
                             </span>
@@ -185,15 +171,13 @@ export default function AppSidebar() {
 
       <SidebarFooter>
         <div className="border-sidebar-border bg-sidebar-accent/30 flex items-center gap-3 rounded-lg border p-2 group-data-[state=collapsed]:hidden">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="/avatar.png" alt="Dilara OkÅŸaksin" />
-            <AvatarFallback>DO</AvatarFallback>
+          <Avatar className="h-9 w-9 border border-border">
+            <AvatarImage src="/avatar.png" />
+            <AvatarFallback className="text-[10px] font-bold">DO</AvatarFallback>
           </Avatar>
           <div className="flex min-w-0 flex-1 flex-col text-xs">
-            <span className="truncate font-semibold text-sidebar-foreground">Dilara 
-              Okşaksin
-            </span>
-            <span className="text-sidebar-foreground/60">Admin</span>
+            <span className="truncate font-semibold text-foreground">Dilara Okşaksin</span>
+            <span className="text-muted-foreground/80">Yazılım Stajyeri</span>
           </div>
         </div>
       </SidebarFooter>

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { toast, useToast } from "@/components/ui/use-toast";
+import { toast, useToast } from "@/app/components/ui/use-toast";
 
 interface UndoAction<T> {
   item: T;

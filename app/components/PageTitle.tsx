@@ -23,7 +23,7 @@ const ROUTE_PREFIX_TITLES: Array<{ prefix: string; title: string }> = [
   { prefix: "/dashboard/posts/", title: "Gönderi" },
   { prefix: "/dashboard/users/", title: "Kullanıcı" },
   { prefix: "/dashboard/settings/", title: "Ayarlar" },
-  { prefix: "/post/", title: "Gönnderi" },
+  { prefix: "/post/", title: "Gönderi" },
   { prefix: "/post/user/", title: "Gönderi" },
   { prefix: "/users/", title: "Kullanıcı" },
 ];
@@ -37,22 +37,28 @@ function formatSegment(segment: string) {
 export default function PageTitle() {
   const pathname = usePathname();
 
+ 
+  const title = useMemo(() => {
+    if (!pathname) return "Sayfa";
+    
+    const directTitle = ROUTE_TITLES[pathname];
+    if (directTitle) return directTitle;
+    
+    const prefixMatch = ROUTE_PREFIX_TITLES.find(({ prefix }) =>
+      pathname.startsWith(prefix)
+    );
+    if (prefixMatch) return prefixMatch.title;
+    
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length === 0) return "Ana Sayfa";
+    
+    return formatSegment(segments[segments.length - 1]);
+  }, [pathname]);
+
+  
   if (pathname === "/dashboard/users" || pathname === "/post") {
     return null;
   }
-
-  const title = useMemo(() => {
-    if (!pathname) return "Sayfa";
-    const directTitle = ROUTE_TITLES[pathname];
-    if (directTitle) return directTitle;
-    const prefixMatch = ROUTE_PREFIX_TITLES.find(({ prefix }) =>
-      pathname.startsWith(prefix),
-    );
-    if (prefixMatch) return prefixMatch.title;
-    const segments = pathname.split("/").filter(Boolean);
-    if (segments.length === 0) return "Ana Sayfa";
-    return formatSegment(segments[segments.length - 1]);
-  }, [pathname]);
 
   return (
     <div className="mb-6">
@@ -62,4 +68,3 @@ export default function PageTitle() {
     </div>
   );
 }
-
