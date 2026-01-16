@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-export interface Post {
-  userId: number;
-  id: number;
-  title: string;
-  body: string;
-}
+import type { Post } from "@/types";
 
 export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([]);

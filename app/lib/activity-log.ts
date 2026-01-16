@@ -1,9 +1,7 @@
 import { Search, Star, User } from "lucide-react";
-import type { ActivityItem as ActivityItemShape } from "@/app/dashboard/activity/activity-data";
+import type { ActivityItem, ActivityType, DateGroup } from "@/types";
 
-export type ActivityType = ActivityItemShape["type"];
-export type ActivityDateGroup = ActivityItemShape["dateGroup"];
-export type ActivityItem = ActivityItemShape;
+export type ActivityDateGroup = Exclude<DateGroup, "Tümü">;
 
 export type ActivityLogEntry = {
   id: number;

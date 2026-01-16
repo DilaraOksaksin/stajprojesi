@@ -9,10 +9,8 @@ import { mapActivityEntry } from "@/app/lib/activity-log";
 import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import { activities } from "@/app/dashboard/activity/activity-data";
-
-
-interface User { id: number; name?: string; }
-interface Post { id: number; title?: string; }
+import type { Post } from "@/types";
+import type { User } from "@/types/user";
 
 
 const fetchUsers = async (): Promise<User[]> => {

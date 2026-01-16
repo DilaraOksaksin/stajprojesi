@@ -1,17 +1,9 @@
 "use server";
 
 import "server-only";
+import type { User } from "@/types/user";
 
-export type ServerUser = {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  website: string;
-};
-
-export async function getUsers(): Promise<ServerUser[]> {
+export async function getUsers(): Promise<User[]> {
   const res = await fetch("https://jsonplaceholder.typicode.com/users", {
     next: { tags: ["users", "layout"] },
   });

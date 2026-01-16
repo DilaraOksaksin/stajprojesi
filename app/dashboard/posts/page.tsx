@@ -1,10 +1,5 @@
 import PostsPageClient from "./posts-page-client";
-
-type Post = {
-  id: number;
-  title: string;
-  body: string;
-};
+import { Post } from "@/types"
 
 export const metadata = {
   title: "Gönderiler",

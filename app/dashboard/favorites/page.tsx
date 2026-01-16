@@ -23,12 +23,12 @@ export default function FavoritesPage() {
   const [postPage, setPostPage] = useState(1);
   const [isMounted, setIsMounted] = useState(false);
 
-  // 1. Hydration ve Sidebar Kayması Çözümü
+  //  Hydration ve Sidebar Kayması Çözümü
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // 2. Favori Postları Çekme
+  // Favori Postları Çekme
   useEffect(() => {
     if (!isMounted) return;
     let isActive = true;
@@ -59,7 +59,7 @@ export default function FavoritesPage() {
     return () => { isActive = false; };
   }, [favoritePostIds, isMounted]);
 
-  // 3. Favori Kullanıcıları Çekme
+  // Favori Kullanıcıları Çekme
   useEffect(() => {
     if (!isMounted) return;
     let isActive = true;

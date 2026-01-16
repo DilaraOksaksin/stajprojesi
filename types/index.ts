@@ -6,6 +6,7 @@ export type SortOrder = "asc" | "desc";
 
 // --- Post & Comment Tipleri ---
 export interface Post {
+  userId: number;
   id: number;
   title: string;
   body: string;
@@ -48,6 +49,14 @@ export interface ActivityItem {
   dateGroup: DateGroup;
 }
 
+export type ActivityLogEntry = {
+  id: number;
+  type: ActivityType;
+  tag: string;
+  text: string;
+  timestamp: string;
+};
+
 // --- Sidebar Navigation Tipleri ---
 export type NavItem =
   | {
@@ -65,3 +74,6 @@ export interface NavGroup {
   label: string;
   items: NavItem[];
 }
+
+// --- Theme Tipleri ---
+export type ThemeMode = "light" | "dark" | "system";

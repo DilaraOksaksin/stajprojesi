@@ -1,14 +1,5 @@
 import { Search, Star, User } from "lucide-react";
-
-export type ActivityItem = {
-  id: number;
-  icon: typeof Search;
-  type: "Arama" | "Favori" | "Kayıt";
-  dateGroup: "Bugün" | "Dün" | "Son 7 Gün";
-  tag: string;
-  text: string;
-  time: string;
-};
+import type { ActivityItem } from "@/types";
 
 export const activities: ActivityItem[] = [
   {

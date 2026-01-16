@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
-// 1. ADIM: Merkezi tipleri kullanıyoruz. Dosya içindeki manuel Post tipini sildik.
 import { User, Post } from "@/types"; 
 
 function getInitials(name: string) {
@@ -16,7 +15,7 @@ function getInitials(name: string) {
 async function getUser(id: string): Promise<User | null> {
   try {
     const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-      cache: "no-store",
+      next: { revalidate: 3600 }, // 1 saat cache
     });
     if (!res.ok) return null;
     return res.json();
@@ -29,7 +28,7 @@ async function getPosts(id: string): Promise<Post[]> {
   try {
     const res = await fetch(
       `https://jsonplaceholder.typicode.com/posts?userId=${id}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 } } // 1 saat cache
     );
     if (!res.ok) return [];
     return res.json();
@@ -38,24 +37,25 @@ async function getPosts(id: string): Promise<Post[]> {
   }
 }
 
-// 2. ADIM: Metadata fonksiyonu - Kırmızılığı gidermek için props olarak aldık
 export async function generateMetadata(props: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const params = await props.params; // Paketi (Promise) açtık
+  const params = await props.params; 
   const user = await getUser(params.id);
   
   if (!user) return { title: "Kullanıcı" };
   return { title: user.name };
 }
 
-// 3. ADIM: Sayfa fonksiyonu - Kırmızılığı gidermek için props olarak aldık
 export default async function UserDetailPage(props: { 
   params: Promise<{ id: string }> 
 }) {
-  const params = await props.params; // Paketi (Promise) açtık
-  const user = await getUser(params.id);
-  const posts = await getPosts(params.id);
+  
+  const resolvedParams = await props.params;
+  const id = resolvedParams.id;
+
+  const user = await getUser(id);
+  const posts = await getPosts(id);
 
   if (!user) {
     return (
@@ -79,7 +79,9 @@ export default async function UserDetailPage(props: {
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="h-11 w-11">
-              <AvatarFallback className="text-sm font-semibold">{getInitials(user.name)}</AvatarFallback>
+              <AvatarFallback className="text-sm font-semibold">
+                {getInitials(user.name)}
+              </AvatarFallback>
             </Avatar>
             <div>
               <CardTitle className="text-xl">{user.name}</CardTitle>
@@ -98,11 +100,17 @@ export default async function UserDetailPage(props: {
       <Card>
         <CardHeader><CardTitle>Geçmiş Hareketleri</CardTitle></CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm">
-            {historyItems.map((item, index) => (
-              <li key={index} className="rounded-md border p-2">{item}</li>
-            ))}
-          </ul>
+          {historyItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Kayıt bulunamadı.</p>
+          ) : (
+            <ul className="space-y-2 text-sm text-foreground">
+              {historyItems.map((item, index) => (
+                <li key={index} className="rounded-md border border-border px-3 py-2">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
@@ -110,7 +118,7 @@ export default async function UserDetailPage(props: {
         <CardHeader><CardTitle>Gönderiler ({posts.length})</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {posts.map((post) => (
-            <Link key={post.id} href={`/post/${post.id}`} className="block rounded-md border p-2 hover:bg-muted text-sm transition">
+            <Link key={post.id} href={`/post/${post.id}`} className="block rounded-md border border-border px-3 py-2 text-sm transition hover:bg-muted">
               {post.title}
             </Link>
           ))}

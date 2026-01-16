@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
-  // 1. State'i başlatırken LocalStorage'dan oku (Böylece useEffect'e gerek kalmaz)
+  
   const [value, setValue] = useState<T>(() => {
     if (typeof window === "undefined") return initialValue
     try {
@@ -16,7 +16,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
   const lastSerializedRef = useRef<string>("")
 
-  // 2. LocalStorage'ı güncelleme işlemini bir fonksiyona alalım
+  
   const updateValue = useCallback((newValue: T | ((prev: T) => T)) => {
     setValue((prev) => {
       const nextValue = typeof newValue === "function" 
@@ -37,7 +37,6 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     })
   }, [key])
 
-  // 3. Diğer sekmelerden veya pencerelerden gelen değişiklikleri dinle
   useEffect(() => {
     if (typeof window === "undefined") return
 

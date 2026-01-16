@@ -10,8 +10,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/app/components/ui/dropdown-menu";
-
-type ThemeMode = "light" | "dark" | "system";
+import type { ThemeMode } from "@/types";
 
 export default function AppearancePage() {
   const { theme, setTheme } = useTheme();

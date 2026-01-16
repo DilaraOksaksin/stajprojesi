@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FavoriButonu from "@/app/components/FavoriButonu";
-
-interface Post {
-  userId: number;
-  id: number;
-  title: string;
-  body: string;
-}
+import type { Post } from "@/types";
 
 export default function UserPostsPage() {
   const { id } = useParams();
