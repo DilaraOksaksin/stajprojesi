@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { LayoutProps } from "@/app/types/next";
 
 export const metadata: Metadata = {
   title: "Aktivite",
 };
 
-export default function ActivityLayout({ children }: { children: ReactNode }) {
+export default function ActivityLayout({ children }: LayoutProps) {
   return <>{children}</>;
 }

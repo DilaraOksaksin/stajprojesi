@@ -22,7 +22,7 @@ import {
   RoleFilter, 
   StatusFilter, 
   SortOption 
-} from "@/types";
+} from "@/app/types";
 
 function getRole(user: User) {
   return user.id % 2 === 0 ? "admin" : "user";
@@ -158,7 +158,7 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
                     <option value="user">User</option>
                   </select>
                 </div>
-                {/* Durum ve Sıralama select yapıları buraya gelecek (aynı mantıkla) */}
+                {/* Durum ve Sıralama select yapıları */}
               </div>
             </SheetContent>
           </Sheet>
@@ -171,7 +171,7 @@ export default function UsersPageClient({ users }: UsersPageClientProps) {
         <>
           <UsersGrid users={pagedUsers} />
 
-          {/* İSTEDİĞİN MODERN SAYFALAMA YAPISI (Önceki / Sonraki) */}
+          {/* MODERN SAYFALAMA YAPISI (Önceki / Sonraki) */}
           {filteredUsers.length > PAGE_SIZE && (
             <div className="flex items-center justify-between pt-8 border-t">
               <p className="text-sm text-muted-foreground hidden sm:block">

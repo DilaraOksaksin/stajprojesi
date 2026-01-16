@@ -7,7 +7,7 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { ArrowUpRight, Heart } from "lucide-react";
-import type { User } from "@/types/user";
+import type { UsersGridProps } from "@/app/types/component";
 import { createActivityEntry } from "@/app/lib/activity-log";
 import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
@@ -29,10 +29,6 @@ function getInitials(name: string) {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
-
-type UsersGridProps = {
-  users: User[];
-};
 
 export default function UsersGrid({ users }: UsersGridProps) {
   const [favoriteIds, setFavoriteIds] = useLocalStorage<number[]>(

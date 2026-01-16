@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Post } from "@/types";
+import type { Post } from "@/app/types";
 
 export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([]);

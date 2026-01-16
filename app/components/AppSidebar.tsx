@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // --- DÜZELTME: TİPLERİ MERKEZİ DOSYADAN ALIYORUZ ---
-import { NavGroup, NavItem } from "@/types";
+import { NavGroup, NavItem } from "@/app/types";
 
 import {
   Sidebar,
@@ -32,7 +32,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/app/components/ui/avatar";
 
-// Menü Yapılandırması (Bunu istersen ayrı bir constants dosyasına da taşıyabilirsin)
+// Menü Yapılandırması 
 const navigationGroups: NavGroup[] = [
   {
     label: "YÖNETİM",

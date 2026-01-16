@@ -7,7 +7,7 @@ import { Search, Star, Trash2 } from "lucide-react";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 
 // --- DÜZELTME: MERKEZİ TİPLER ---
-import { User, Post } from "@/types";
+import { User, Post } from "@/app/types";
 
 const FAVORITE_POSTS_KEY = "favorites";
 const FAVORITE_USERS_KEY = "favoriteUsers";

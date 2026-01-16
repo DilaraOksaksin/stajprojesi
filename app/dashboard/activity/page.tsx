@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
-// TİPLER MERKEZİ DOSYADAN GELİYOR
-import { Post, PostsPageClientProps, SortOrder } from "@/types";
+import { Post, PostsPageClientProps, SortOrder } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -24,7 +23,7 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
     return () => clearTimeout(handler);
   }, [query]);
 
-  // SIRALAMA VE FİLTRELEME: "result is not iterable" hatası giderildi
+  // SIRALAMA VE FİLTRELEME
   const sortedPosts = useMemo(() => {
     // Güvenlik kontrolü: posts dizi değilse boş dizi dön
     if (!posts || !Array.isArray(posts)) return [];
@@ -38,7 +37,7 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
       );
     }
 
-    // Yayma operatöründen önce verinin dizi olduğundan emin oluyoruz
+    
     const sorted = [...(result || [])].sort((a, b) => a.title.localeCompare(b.title));
     return sortOrder === "desc" ? sorted.reverse() : sorted;
   }, [posts, debouncedQuery, sortOrder]);
@@ -51,7 +50,7 @@ export default function PostsPageClient({ posts }: PostsPageClientProps) {
     return sortedPosts.slice(start, start + PAGE_SIZE);
   }, [page, sortedPosts]);
 
-  // Arama değişince 1. sayfaya dön
+  // Arama değişince 1. sayfaya dön//
   useEffect(() => { setPage(1); }, [debouncedQuery]);
 
   const handleCardClick = (post: Post) => {

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { LayoutProps } from "@/app/types/next";
 
 export const metadata: Metadata = {
   title: "Görünüm",
 };
 
-export default function AppearanceLayout({ children }: { children: ReactNode }) {
+export default function AppearanceLayout({ children }: LayoutProps) {
   return <>{children}</>;
 }

@@ -1,5 +1,5 @@
 import PostsPageClient from "./posts-page-client";
-import { Post } from "@/types"
+import { Post } from "@/app/types"
 
 export const metadata = {
   title: "Gönderiler",

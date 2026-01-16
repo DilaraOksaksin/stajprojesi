@@ -10,7 +10,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/app/components/ui/dropdown-menu";
-import type { ThemeMode } from "@/types";
+import type { ThemeMode } from "@/app/types";
 
 export default function AppearancePage() {
   const { theme, setTheme } = useTheme();

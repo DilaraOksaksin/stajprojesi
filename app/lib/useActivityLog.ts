@@ -4,7 +4,7 @@ import { useCallback } from "react";
 
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
 import { ACTIVITY_LOG_KEY } from "@/app/lib/activity-log";
-import type { ActivityLogEntry } from "@/types";
+import type { ActivityLogEntry } from "@/app/types";
 
 const MAX_LOGS = 50;
 

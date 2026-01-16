@@ -1,5 +1,5 @@
 import { Search, Star, User } from "lucide-react";
-import type { ActivityItem } from "@/types";
+import type { ActivityItem } from "@/app/types";
 
 export const activities: ActivityItem[] = [
   {

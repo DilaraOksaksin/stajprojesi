@@ -31,7 +31,7 @@ const Toggle = React.forwardRef<
         // zorunlu transform (GPU hızlandırma) + yumuşak animasyon
         "transform will-change-transform transition-transform duration-300 ease-in-out",
 
-        // alternatif daha yumuşak istersen duration-400 ve ease-out kullan
+        
         // hareket (Radix data attribute ile)
         "data-[state=checked]:translate-x-6 data-[state=unchecked]:translate-x-0"
       )}

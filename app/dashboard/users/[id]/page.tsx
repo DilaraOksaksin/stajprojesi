@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
-import { User, Post } from "@/types"; 
+import { User, Post } from "@/app/types";
+import type { GenerateMetadataProps, PageParams } from "@/app/types/next"; 
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -15,7 +16,7 @@ function getInitials(name: string) {
 async function getUser(id: string): Promise<User | null> {
   try {
     const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-      next: { revalidate: 3600 }, // 1 saat cache
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return res.json();
@@ -28,7 +29,7 @@ async function getPosts(id: string): Promise<Post[]> {
   try {
     const res = await fetch(
       `https://jsonplaceholder.typicode.com/posts?userId=${id}`,
-      { next: { revalidate: 3600 } } // 1 saat cache
+      { cache: "no-store" }
     );
     if (!res.ok) return [];
     return res.json();
@@ -37,9 +38,9 @@ async function getPosts(id: string): Promise<Post[]> {
   }
 }
 
-export async function generateMetadata(props: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: GenerateMetadataProps
+): Promise<Metadata> {
   const params = await props.params; 
   const user = await getUser(params.id);
   
@@ -47,9 +48,7 @@ export async function generateMetadata(props: {
   return { title: user.name };
 }
 
-export default async function UserDetailPage(props: { 
-  params: Promise<{ id: string }> 
-}) {
+export default async function UserDetailPage(props: PageParams) {
   
   const resolvedParams = await props.params;
   const id = resolvedParams.id;

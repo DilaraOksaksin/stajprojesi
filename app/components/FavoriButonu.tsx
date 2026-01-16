@@ -2,13 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
+import type { FavoriButonuProps } from '@/app/types/component';
 import { createActivityEntry } from '@/app/lib/activity-log';
 import { useActivityLog } from '@/app/lib/useActivityLog';
-
-interface FavoriButonuProps {
-  id: number;
-  className?: string;
-}
 
 export default function FavoriButonu({ id, className = "" }: FavoriButonuProps) {
   const [favorimi, setFavorimi] = useState(false);

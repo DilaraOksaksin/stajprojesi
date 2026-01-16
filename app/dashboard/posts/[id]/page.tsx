@@ -5,8 +5,8 @@
   CardTitle,
 } from "@/app/components/ui/card";
 import type { Metadata } from "next";
-
-import { Post, Comment } from "@/types";
+import { Post, Comment } from "@/app/types";
+import type { GenerateMetadataProps, PageParams } from "@/app/types/next";
 
 
 async function getPost(id: string): Promise<Post> {
@@ -27,13 +27,10 @@ async function getComments(id: string): Promise<Comment[]> {
   return res.json();
 }
 
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>; 
-}): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata(
+  props: GenerateMetadataProps
+): Promise<Metadata> {
+  const { id } = await props.params;
   try {
     const post = await getPost(id);
     return { title: post?.title ?? "Gönderi Detayı" };
@@ -42,12 +39,8 @@ export async function generateMetadata({
   }
 }
 
-export default async function PostDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>; 
-}) {
-  const { id } = await params; 
+export default async function PostDetailPage(props: PageParams) {
+  const { id } = await props.params; 
   
   const [post, comments] = await Promise.all([getPost(id), getComments(id)]);
 

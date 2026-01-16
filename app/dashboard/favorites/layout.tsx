@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { LayoutProps } from "@/app/types/next";
 
 export const metadata: Metadata = {
   title: "Favoriler",
 };
 
-export default function FavoritesLayout({ children }: { children: ReactNode }) {
+export default function FavoritesLayout({ children }: LayoutProps) {
   return <>{children}</>;
 }

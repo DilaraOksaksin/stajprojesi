@@ -1,15 +1,10 @@
 import { Search, Star, User } from "lucide-react";
-import type { ActivityItem, ActivityType, DateGroup } from "@/types";
-
-export type ActivityDateGroup = Exclude<DateGroup, "Tümü">;
-
-export type ActivityLogEntry = {
-  id: number;
-  type: ActivityType;
-  tag: string;
-  text: string;
-  timestamp: string;
-};
+import type {
+  ActivityItem,
+  ActivityType,
+  ActivityLogEntry,
+  ActivityDateGroup,
+} from "@/app/types";
 
 export const ACTIVITY_LOG_KEY = "activityLog";
 

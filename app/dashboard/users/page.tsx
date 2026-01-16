@@ -1,4 +1,4 @@
-import type { User } from "@/types/user";
+import type { User } from "@/app/types/user";
 import UsersPageClient from "./users-page-client";
 
 export const metadata = {

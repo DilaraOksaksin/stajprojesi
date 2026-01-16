@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import type { LayoutProps } from "@/app/types/next";
 
 export const metadata: Metadata = {
   title: "Gizlilik ve Güvenlik",
 };
 
-export default function PrivacyLayout({ children }: { children: ReactNode }) {
+export default function PrivacyLayout({ children }: LayoutProps) {
   return <>{children}</>;
 }
