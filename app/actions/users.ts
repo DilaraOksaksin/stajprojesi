@@ -2,13 +2,14 @@
 
 import "server-only";
 import type { User } from "@/app/types/user";
+import { getUsers as getUsersService } from "@/app/services/userService";
 
 export async function getUsers(): Promise<User[]> {
-  const res = await fetch("https://jsonplaceholder.typicode.com/users", {
+  const users = await getUsersService({
     next: { tags: ["users", "layout"] },
   });
-  if (!res.ok) throw new Error("Kullanıcılar alınamadı");
-  return res.json();
+  if (!users.length) throw new Error("Kullanıcılar alınamadı");
+  return users;
 }
 
 export async function revalidateUsers() {

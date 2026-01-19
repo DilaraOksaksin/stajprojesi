@@ -1,18 +1,12 @@
 import PostsPageClient from "./posts-page-client";
-import { Post } from "@/app/types"
+import type { Post } from "@/app/types";
+import { getPosts as getPostsService } from "@/app/services/postService";
 
 export const metadata = {
   title: "Gönderiler",
 };
 
-async function getPosts(): Promise<Post[]> {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
-    cache: "no-store",
-  });
-  return res.json();
-}
-
 export default async function DashboardPostsPage() {
-  const posts = await getPosts();
+  const posts: Post[] = await getPostsService({ cache: "no-store" });
   return <PostsPageClient posts={posts} />;
 }

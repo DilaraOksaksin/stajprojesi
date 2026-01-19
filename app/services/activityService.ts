@@ -1,7 +1,18 @@
+/**
+ * Activity Service
+ * 
+ * Activity ile ilgili tüm veri ve işlemleri merkezi olarak yönetir.
+ * Single Source of Truth prensibine uygun olarak mock data ve utility fonksiyonları içerir.
+ */
+
 import { Search, Star, User } from "lucide-react";
 import type { ActivityItem } from "@/app/types";
 
-export const activities: ActivityItem[] = [
+/**
+ * Mock activity data - Default aktiviteler
+ * İleride API'den çekilebilir
+ */
+export const getDefaultActivities = (): ActivityItem[] => [
   {
     id: 1,
     icon: Search,
@@ -30,3 +41,4 @@ export const activities: ActivityItem[] = [
     time: "08:02",
   },
 ];
+

@@ -1,19 +1,13 @@
 import type { User } from "@/app/types/user";
 import UsersPageClient from "./users-page-client";
+import { getUsers as getUsersService } from "@/app/services/userService";
 
 export const metadata = {
   title: "Kullanıcılar",
 };
 
-async function getUsers(): Promise<User[]> {
-  const res = await fetch("https://jsonplaceholder.typicode.com/users", {
-    cache: "no-store",
-  });
-  return res.json();
-}
-
 export default async function DashboardUsersPage() {
-  const users = await getUsers();
+  const users: User[] = await getUsersService({ cache: "no-store" });
 
   return <UsersPageClient users={users} />;
 }

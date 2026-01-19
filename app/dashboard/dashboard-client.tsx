@@ -8,20 +8,12 @@ import { Skeleton } from "@/app/components/ui/skeleton";
 import { mapActivityEntry } from "@/app/lib/activity-log";
 import { useActivityLog } from "@/app/lib/useActivityLog";
 import { useLocalStorage } from "@/app/lib/useLocalStorage";
-import { activities } from "@/app/dashboard/activity/activity-data";
+import { getDefaultActivities } from "@/app/services/activityService";
 import type { Post } from "@/app/types";
 import type { User } from "@/app/types/user";
+import { getPosts } from "@/app/services/postService";
+import { getUsers } from "@/app/services/userService";
 
-
-const fetchUsers = async (): Promise<User[]> => {
-  const res = await fetch("https://jsonplaceholder.typicode.com/users");
-  return res.ok ? res.json() : [];
-};
-
-const fetchPosts = async (): Promise<Post[]> => {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  return res.ok ? res.json() : [];
-};
 
 export default function DashboardClient({
   title = "Dashboard",
@@ -42,18 +34,12 @@ export default function DashboardClient({
     
     async function loadData() {
       setIsLoading(true);
-      try {
-        
-        const results = await Promise.all([fetchUsers(), fetchPosts()]);
-        
-        if (isActive) {
-          setUsers(results[0]);
-          setPosts(results[1]);
-        }
-      } catch (error) {
-        console.error("Veri yüklenemedi:", error);
-      } finally {
-        if (isActive) setIsLoading(false);
+      const [nextUsers, nextPosts] = await Promise.all([getUsers(), getPosts()]);
+
+      if (isActive) {
+        setUsers(nextUsers);
+        setPosts(nextPosts);
+        setIsLoading(false);
       }
     }
 
@@ -68,8 +54,8 @@ export default function DashboardClient({
   ];
 
   const recentActivities = useMemo(() => {
-    if (!isMounted) return activities.slice(0, 3);
-    const source = activityEntries.length ? activityEntries.map(mapActivityEntry) : activities;
+    if (!isMounted) return getDefaultActivities().slice(0, 3);
+    const source = activityEntries.length ? activityEntries.map(mapActivityEntry) : getDefaultActivities();
     return source.slice(0, 3);
   }, [activityEntries, isMounted]);
 

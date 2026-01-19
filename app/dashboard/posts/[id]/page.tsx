@@ -7,32 +7,15 @@
 import type { Metadata } from "next";
 import { Post, Comment } from "@/app/types";
 import type { GenerateMetadataProps, PageParams } from "@/app/types/next";
+import { getCommentsByPostId, getPostById } from "@/app/services/postService";
 
-
-async function getPost(id: string): Promise<Post> {
-  const res = await fetch(
-    `https://jsonplaceholder.typicode.com/posts/${id}`,
-    { next: { revalidate: 3600 } } 
-  );
-  if (!res.ok) throw new Error("Gönderi bulunamadı");
-  return res.json();
-}
-
-async function getComments(id: string): Promise<Comment[]> {
-  const res = await fetch(
-    `https://jsonplaceholder.typicode.com/posts/${id}/comments`,
-    { next: { revalidate: 3600 } }
-  );
-  if (!res.ok) throw new Error("Yorumlar yüklenemedi");
-  return res.json();
-}
 
 export async function generateMetadata(
   props: GenerateMetadataProps
 ): Promise<Metadata> {
   const { id } = await props.params;
   try {
-    const post = await getPost(id);
+    const post = await getPostById(id, { next: { revalidate: 3600 } });
     return { title: post?.title ?? "Gönderi Detayı" };
   } catch {
     return { title: "Gönderi Detayı" };
@@ -42,7 +25,10 @@ export async function generateMetadata(
 export default async function PostDetailPage(props: PageParams) {
   const { id } = await props.params; 
   
-  const [post, comments] = await Promise.all([getPost(id), getComments(id)]);
+  const [post, comments] = await Promise.all([
+    getPostById(id, { next: { revalidate: 3600 } }),
+    getCommentsByPostId(id, { next: { revalidate: 3600 } }),
+  ]);
 
   return (
     <div className="p-6 md:p-10 space-y-6 max-w-4xl mx-auto">

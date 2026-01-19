@@ -5,6 +5,8 @@ import { Badge } from "@/app/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { User, Post } from "@/app/types";
 import type { GenerateMetadataProps, PageParams } from "@/app/types/next"; 
+import { getUserById } from "@/app/services/userService";
+import { getPostsByUserId } from "@/app/services/postService";
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -13,36 +15,11 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-async function getUser(id: string): Promise<User | null> {
-  try {
-    const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function getPosts(id: string): Promise<Post[]> {
-  try {
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/posts?userId=${id}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
-}
-
 export async function generateMetadata(
   props: GenerateMetadataProps
 ): Promise<Metadata> {
   const params = await props.params; 
-  const user = await getUser(params.id);
+  const user = await getUserById(params.id, { cache: "no-store" });
   
   if (!user) return { title: "Kullanıcı" };
   return { title: user.name };
@@ -53,8 +30,8 @@ export default async function UserDetailPage(props: PageParams) {
   const resolvedParams = await props.params;
   const id = resolvedParams.id;
 
-  const user = await getUser(id);
-  const posts = await getPosts(id);
+  const user = await getUserById(id, { cache: "no-store" });
+  const posts = await getPostsByUserId(id, { cache: "no-store" });
 
   if (!user) {
     return (

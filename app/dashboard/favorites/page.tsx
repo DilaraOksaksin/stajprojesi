@@ -8,6 +8,8 @@ import { useLocalStorage } from "@/app/lib/useLocalStorage";
 
 // --- DÜZELTME: MERKEZİ TİPLER ---
 import { User, Post } from "@/app/types";
+import { getPostsByIds } from "@/app/services/postService";
+import { getUsersByIds } from "@/app/services/userService";
 
 const FAVORITE_POSTS_KEY = "favorites";
 const FAVORITE_USERS_KEY = "favoriteUsers";
@@ -39,20 +41,8 @@ export default function FavoritesPage() {
         return;
       }
 
-      try {
-        const data = await Promise.all(
-          favoritePostIds.map(async (id) => {
-            const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
-            return res.ok ? await res.json() : null;
-          })
-        );
-
-        if (isActive) {
-          setFavoritePosts(data.filter((p): p is Post => p !== null));
-        }
-      } catch {
-        if (isActive) setFavoritePosts([]);
-      }
+      const data = await getPostsByIds(favoritePostIds, { cache: "no-store" });
+      if (isActive) setFavoritePosts(data);
     };
 
     fetchPosts();
@@ -70,20 +60,8 @@ export default function FavoritesPage() {
         return;
       }
 
-      try {
-        const data = await Promise.all(
-          favoriteUserIds.map(async (id) => {
-            const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
-            return res.ok ? await res.json() : null;
-          })
-        );
-
-        if (isActive) {
-          setFavoriteUsers(data.filter((u): u is User => u !== null));
-        }
-      } catch {
-        if (isActive) setFavoriteUsers([]);
-      }
+      const data = await getUsersByIds(favoriteUserIds, { cache: "no-store" });
+      if (isActive) setFavoriteUsers(data);
     };
 
     fetchUsers();

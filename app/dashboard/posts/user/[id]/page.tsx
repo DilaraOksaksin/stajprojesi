@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FavoriButonu from "@/app/components/FavoriButonu";
 import type { Post } from "@/app/types";
+import { getPostsByUserId } from "@/app/services/postService";
+import { getUserById } from "@/app/services/userService";
 
 export default function UserPostsPage() {
   const { id } = useParams();
@@ -17,20 +19,23 @@ export default function UserPostsPage() {
     if (!id) return;
 
     const fetchPosts = async () => {
-      try {
-        const res = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`);
-        const userRes = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
-        if (!userRes.ok) throw new Error("Kullanıcı bilgisi alınamadı");
-        const userData = await userRes.json();
-        setName(userData.name);
-        if (!res.ok) throw new Error("Veri alınamadı");
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
+      const userId = Array.isArray(id) ? id[0] : id;
+
+      const [user, userPosts] = await Promise.all([
+        getUserById(userId, { cache: "no-store" }),
+        getPostsByUserId(userId, { cache: "no-store" }),
+      ]);
+
+      if (!user) {
+        setError("Kullanıcı bilgisi alınamadı");
         setLoading(false);
+        return;
       }
+
+      setName(user.name);
+      setPosts(userPosts);
+      setError(null);
+      setLoading(false);
     };
 
     fetchPosts();
